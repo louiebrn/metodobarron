@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Método Barron — Login</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #05080F; color: #E8EFF8; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    :root { --navy: #05080F; --navy-mid: #0D1526; --navy-card: #111E35; --teal: #00C2D4; --gold: #F5A623; --white: #FFFFFF; --off-white: #E8EFF8; --muted: #6B85A8; --green: #22C55E; --red: #EF4444; --border: rgba(0,194,212,0.12); }
+    h1,h2,h3 { font-family: 'Syne', sans-serif; }
+
+    nav { background: rgba(5,8,15,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--white); text-decoration: none; }
+    .logo span { color: var(--teal); }
+    .nav-back { font-size: 0.82rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--teal); }
+
+    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; overflow: hidden; }
+
+    /* Particle canvas */
+    #login-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+    /* Grid background */
+    .page::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(0,194,212,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,194,212,0.03) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; z-index: 0; }
+    .page::after { content: ''; position: absolute; top: 30%; left: 50%; transform: translateX(-50%); width: 700px; height: 350px; background: radial-gradient(ellipse, rgba(0,194,212,0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+    /* Cursor glow */
+    #cursor-glow { position: fixed; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(0,194,212,0.06) 0%, transparent 70%); pointer-events: none; transform: translate(-50%,-50%); z-index: 1; opacity: 0; transition: opacity 0.3s; }
+
+    /* Card with glassmorphism */
+    .card { background: rgba(17,30,53,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(0,194,212,0.2); border-radius: 24px; padding: 2.5rem; width: 100%; max-width: 420px; position: relative; z-index: 2; box-shadow: 0 24px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,194,212,0.05); animation: cardIn 0.5s ease forwards; }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Animated gradient border on card */
+    .card::before { content: ''; position: absolute; inset: -1px; border-radius: 25px; background: linear-gradient(135deg, rgba(0,194,212,0.3), transparent, rgba(245,166,35,0.15), transparent, rgba(0,194,212,0.3)); background-size: 300% 300%; animation: gradientBorder 6s linear infinite; z-index: -1; pointer-events: none; }
+    @keyframes gradientBorder { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+    .card-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,194,212,0.1); border: 1px solid rgba(0,194,212,0.25); border-radius: 999px; padding: 0.3rem 0.9rem; font-size: 0.75rem; font-weight: 600; color: var(--teal); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1.25rem; }
+    .card-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.7); } }
+
+    .card h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .card > div > p { font-size: 0.875rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
+
+    input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; color: var(--white); font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+    input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,194,212,0.1); background: rgba(255,255,255,0.07); }
+    input::placeholder { color: var(--muted); }
+
+    .btn { width: 100%; padding: 0.95rem; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; border: none; transition: transform 0.2s, box-shadow 0.2s; margin-top: 0.5rem; }
+    .btn-primary { background: var(--teal); color: var(--navy); box-shadow: 0 0 24px rgba(0,194,212,0.25); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(0,194,212,0.4); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; font-size: 0.8rem; color: var(--muted); }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .toggle-link { text-align: center; font-size: 0.875rem; color: var(--muted); margin-top: 1.5rem; }
+    .toggle-link a { color: var(--teal); text-decoration: none; font-weight: 600; }
+    .toggle-link a:hover { text-decoration: underline; }
+
+    .alert { padding: 0.85rem 1rem; border-radius: 10px; font-size: 0.875rem; margin-bottom: 1.25rem; display: none; }
+    .alert.error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; }
+    .alert.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86EFAC; }
+    .alert.show { display: block; }
+
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(5,8,15,0.3); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Trust badges below card */
+    .trust-row { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; position: relative; z-index: 2; }
+    .trust-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--muted); }
+
+    #forgot-view { display: none; }
+  </style>
+</head>
+<body>
+<canvas id="login-canvas"></canvas>
+<div id="cursor-glow"></div>
+<nav>
+  <a class="logo" href="index.html">Método<span>Barron</span></a>
+  <a class="nav-back" href="index.html">← Voltar ao site</a>
+</nav>
+<div class="page">
+  <div style="width:100%;max-width:420px;position:relative;z-index:2;">
+    <div class="card">
+      <div id="login-view">
+        <div class="card-eyebrow">Área de Membros</div>
+        <h2>Bem-vindo de volta</h2>
+        <p>Acesse sua conta para continuar aprendendo ICT no NQ1 e ES1.</p>
+        <div class="alert error" id="login-error"></div>
+        <div class="alert success" id="login-success"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" /></div>
+        <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="••••••••" /></div>
+        <button class="btn btn-primary" id="login-btn" onclick="handleLogin()">Entrar na minha conta</button>
+        <div class="divider">ou</div>
+        <div class="toggle-link"><a href="#" onclick="showForgot()">Esqueci minha senha</a></div>
+      </div>
+      <div id="forgot-view">
+        <div class="card-eyebrow">Recuperar senha</div>
+        <h2>Esqueceu a senha?</h2>
+        <p>Digite seu email e enviaremos um link para criar uma nova senha.</p>
+        <div class="alert error" id="forgot-error"></div>
+        <div class="alert success" id="forgot-success"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="forgot-email" placeholder="seu@email.com" /></div>
+        <button class="btn btn-primary" id="forgot-btn" onclick="handleForgot()">Enviar link de recuperação</button>
+        <div class="divider">ou</div>
+        <div class="toggle-link"><a href="#" onclick="showLogin()">← Voltar ao login</a></div>
+      </div>
+    </div>
+    <div class="trust-row">
+      <div class="trust-item">🔒 Conexão segura</div>
+      <div class="trust-item">🛡️ Dados protegidos</div>
+      <div class="trust-item">⚡ Supabase Auth</div>
+    </div>
+  </div>
+</div>
+<script>
+  const SUPABASE_URL = 'https://canmukhomefokdfjrlcc.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbm11a2hvbWVmb2tkZmpybGNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNTg5MjQsImV4cCI6MjA5NjYzNDkyNH0.Aw93j4-lz6bHF3q4P9e75wHJzafddvzvwcQP0rhXdX4';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) window.location.href = 'members.html';
+  }
+  checkSession();
+
+  async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-btn');
+    const err = document.getElementById('login-error');
+    const suc = document.getElementById('login-success');
+    err.classList.remove('show'); suc.classList.remove('show');
+    if (!email || !password) { err.textContent = 'Por favor preencha todos os campos.'; err.classList.add('show'); return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Entrando...';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { err.textContent = 'Email ou senha incorretos. Tente novamente.'; err.classList.add('show'); btn.disabled = false; btn.innerHTML = 'Entrar na minha conta'; }
+    else { suc.textContent = 'Login realizado! Redirecionando...'; suc.classList.add('show'); setTimeout(() => window.location.href = 'members.html', 1000); }
+  }
+
+  async function handleForgot() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const btn = document.getElementById('forgot-btn');
+    const err = document.getElementById('forgot-error');
+    const suc = document.getElementById('forgot-success');
+    err.classList.remove('show'); suc.classList.remove('show');
+    if (!email) { err.textContent = 'Por favor insira seu email.'; err.classList.add('show'); return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando...';
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/members.html' });
+    btn.disabled = false; btn.innerHTML = 'Enviar link de recuperação';
+    if (error) { err.textContent = 'Erro ao enviar email. Tente novamente.'; err.classList.add('show'); }
+    else { suc.textContent = 'Link enviado! Verifique seu email.'; suc.classList.add('show'); }
+  }
+
+  function showForgot() { document.getElementById('login-view').style.display = 'none'; document.getElementById('forgot-view').style.display = 'block'; }
+  function showLogin() { document.getElementById('forgot-view').style.display = 'none'; document.getElementById('login-view').style.display = 'block'; }
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') { if (document.getElementById('login-view').style.display !== 'none') handleLogin(); else handleForgot(); } });
+
+  // Particle canvas
+  (function() {
+    const canvas = document.getElementById('login-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    for (let i = 0; i < 50; i++) {
+      particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.5 + 0.5, dx: (Math.random() - 0.5) * 0.3, dy: (Math.random() - 0.5) * 0.3, alpha: Math.random() * 0.35 + 0.1 });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,194,212,${p.alpha})`; ctx.fill();
+        particles.forEach(p2 => {
+          const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (dist < 100) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.strokeStyle = `rgba(0,194,212,${0.04 * (1 - dist/100)})`; ctx.lineWidth = 0.5; ctx.stroke(); }
+        });
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  // Cursor glow
+  const glow = document.getElementById('cursor-glow');
+  document.addEventListener('mousemove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; glow.style.opacity = '1'; });
+</script>
+</body>
+</html>
