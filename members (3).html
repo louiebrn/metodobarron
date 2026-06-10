@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Método Barron — Área de Membros</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #05080F; color: #E8EFF8; overflow-x: hidden; }
+    :root {
+      --navy: #05080F; --navy-mid: #0D1526; --navy-card: #111E35;
+      --teal: #00C2D4; --teal-dim: #007F8C; --gold: #F5A623;
+      --white: #FFFFFF; --off-white: #E8EFF8; --muted: #6B85A8;
+      --green: #22C55E; --red: #EF4444; --border: rgba(0,194,212,0.12);
+    }
+    h1,h2,h3,h4 { font-family: 'Syne', sans-serif; line-height: 1.2; }
+    p { line-height: 1.7; color: var(--muted); }
+
+    /* Scroll progress bar */
+    #page-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--gold)); width: 0%; z-index: 200; border-radius: 0 2px 2px 0; }
+
+    /* Nav */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(5,8,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 64px; display: flex; align-items: center; }
+    .nav-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--white); text-decoration: none; }
+    .logo span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .plan-chip { padding: 0.3rem 0.9rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .plan-chip.basic { background: rgba(107,133,168,0.15); border: 1px solid rgba(107,133,168,0.3); color: var(--muted); }
+    .plan-chip.premium { background: rgba(245,166,35,0.15); border: 1px solid rgba(245,166,35,0.3); color: var(--gold); animation: premiumPulse 3s infinite; }
+    @keyframes premiumPulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,0)} 50%{box-shadow:0 0 12px 2px rgba(245,166,35,0.2)} }
+    .logout-btn { font-size: 0.8rem; color: var(--muted); cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif; transition: color 0.2s; }
+    .logout-btn:hover { color: var(--red); }
+
+    /* Layout */
+    .page { padding-top: 64px; min-height: 100vh; display: flex; }
+
+    /* Sidebar */
+    .sidebar {
+      background: rgba(8,13,24,0.98); backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border);
+      padding: 0; position: fixed; top: 64px; left: 0; bottom: 0;
+      width: 272px; overflow-y: auto; flex-shrink: 0;
+      scrollbar-width: thin; scrollbar-color: rgba(0,194,212,0.2) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(0,194,212,0.2); border-radius: 4px; }
+
+    .progress-bar-wrap { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); background: rgba(0,194,212,0.03); }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.6rem; }
+    .progress-label span:last-child { color: var(--teal); font-weight: 700; }
+    .progress-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 999px; }
+    .progress-fill { height: 5px; background: linear-gradient(90deg, var(--teal), var(--gold)); border-radius: 999px; width: 0%; transition: width 0.5s cubic-bezier(.4,0,.2,1); box-shadow: 0 0 8px rgba(0,194,212,0.4); }
+
+    .sidebar-section { padding: 1.25rem 0 0.25rem; }
+    .sidebar-label { font-size: 0.67rem; font-weight: 700; color: rgba(0,194,212,0.6); letter-spacing: 0.14em; text-transform: uppercase; padding: 0 1.5rem; margin-bottom: 0.4rem; display: block; }
+    .sidebar-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 1.5rem; cursor: pointer; font-size: 0.845rem; color: var(--muted); transition: all 0.18s; border-left: 2px solid transparent; position: relative; }
+    .sidebar-item:hover { background: rgba(0,194,212,0.06); color: var(--off-white); border-left-color: rgba(0,194,212,0.3); padding-left: 1.65rem; }
+    .sidebar-item.active { background: rgba(0,194,212,0.1); color: var(--teal); border-left-color: var(--teal); font-weight: 600; }
+    .sidebar-item.locked { opacity: 0.4; cursor: not-allowed; }
+    .sidebar-item.locked:hover { background: none; color: var(--muted); border-left-color: transparent; padding-left: 1.5rem; }
+    .lesson-num { font-size: 0.7rem; color: rgba(107,133,168,0.7); min-width: 26px; flex-shrink: 0; font-family: 'Syne', sans-serif; }
+    .sidebar-item.active .lesson-num { color: rgba(0,194,212,0.7); }
+    .check-icon { margin-left: auto; color: var(--green); font-size: 0.75rem; }
+    .premium-label { font-size: 0.6rem; background: rgba(245,166,35,0.15); color: var(--gold); border-radius: 4px; padding: 0.1rem 0.35rem; margin-left: auto; font-weight: 700; letter-spacing: 0.03em; }
+
+    /* Main content */
+    .main { margin-left: 272px; padding: 2.5rem 3rem; width: calc(100% - 272px); min-width: 0; }
+    .content-area { width: 100%; max-width: 820px; }
+
+    /* Video container */
+    .video-container {
+      background: rgba(17,30,53,0.8); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 20px;
+      overflow: hidden; margin-bottom: 2rem; aspect-ratio: 16/9;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+      transition: border-color 0.3s;
+    }
+    .video-container:hover { border-color: rgba(0,194,212,0.25); }
+    .video-placeholder { text-align: center; padding: 2rem; width: 100%; position: relative; z-index: 1; }
+    /* Grid bg inside video */
+    .video-placeholder::before { content:''; position:absolute; inset:0; background-image: linear-gradient(rgba(0,194,212,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,194,212,0.03) 1px,transparent 1px); background-size: 40px 40px; pointer-events:none; }
+    .play-btn { width: 76px; height: 76px; border-radius: 50%; background: var(--teal); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; cursor: pointer; box-shadow: 0 0 40px rgba(0,194,212,0.4), 0 0 80px rgba(0,194,212,0.15); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+    .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 56px rgba(0,194,212,0.5), 0 0 100px rgba(0,194,212,0.2); }
+    .play-btn::before { content:''; position:absolute; inset:-8px; border-radius:50%; border: 1px solid rgba(0,194,212,0.2); animation: ripple 2s infinite; }
+    @keyframes ripple { 0%{transform:scale(1);opacity:1} 100%{transform:scale(1.4);opacity:0} }
+    .play-btn svg { width: 28px; height: 28px; fill: var(--navy); margin-left: 5px; }
+    .video-placeholder p { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
+    .upload-hint { font-size: 0.78rem; background: rgba(0,194,212,0.07); border: 1px dashed rgba(0,194,212,0.25); border-radius: 8px; padding: 0.6rem 1.25rem; color: var(--teal); display: inline-block; }
+
+    /* Locked */
+    .locked-container { background: linear-gradient(135deg,rgba(17,30,53,0.95),rgba(25,18,8,0.95)); backdrop-filter: blur(16px); border: 1px solid rgba(245,166,35,0.2); border-radius: 20px; overflow: hidden; margin-bottom: 2rem; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+    .locked-content { text-align: center; padding: 2rem; }
+    .lock-big { font-size: 3.5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(245,166,35,0.3)); }
+    .locked-content h3 { font-size: 1.4rem; color: var(--gold); margin-bottom: 0.5rem; }
+    .locked-content p { font-size: 0.9rem; color: var(--muted); margin-bottom: 1.75rem; max-width: 360px; }
+    .upgrade-btn { background: linear-gradient(135deg,#F5A623,#e8950f); color: var(--navy); padding: 0.9rem 2.25rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; font-family: 'Syne',sans-serif; text-decoration: none; display: inline-block; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 28px rgba(245,166,35,0.3); }
+    .upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(245,166,35,0.45); }
+
+    /* Lesson header */
+    .lesson-header { margin-bottom: 1.75rem; padding-bottom: 1.75rem; border-bottom: 1px solid var(--border); }
+    .module-badge { display: inline-flex; align-items: center; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.2); color: var(--gold); border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.85rem; }
+    .lesson-header h1 { font-size: 1.65rem; font-weight: 800; margin-bottom: 0.6rem; color: var(--white); line-height: 1.2; }
+    .lesson-meta { display: flex; gap: 1.5rem; font-size: 0.8rem; color: var(--muted); flex-wrap: wrap; }
+    .lesson-meta span { display: flex; align-items: center; gap: 0.35rem; }
+
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 2rem; gap: 0.25rem; }
+    .tab { padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; border-radius: 6px 6px 0 0; }
+    .tab:hover { color: var(--off-white); background: rgba(255,255,255,0.03); }
+    .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+    .description { font-size: 0.95rem; color: var(--off-white); line-height: 1.85; margin-bottom: 2rem; }
+
+    /* Resources */
+    .resources-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .resource-card { background: rgba(17,30,53,0.7); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s; }
+    .resource-card:hover { border-color: rgba(0,194,212,0.4); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,194,212,0.08); }
+    .resource-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(0,194,212,0.1); border: 1px solid rgba(0,194,212,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .resource-name { font-size: 0.875rem; font-weight: 600; color: var(--white); }
+    .resource-type { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* Nav buttons */
+    .lesson-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); gap: 1rem; }
+    .nav-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; font-family: 'Inter',sans-serif; }
+    .nav-btn.prev { background: rgba(17,30,53,0.8); border: 1px solid var(--border); color: var(--off-white); }
+    .nav-btn.prev:hover { transform: translateX(-3px); border-color: rgba(0,194,212,0.3); }
+    .nav-btn.next { background: var(--teal); color: var(--navy); border: none; box-shadow: 0 0 20px rgba(0,194,212,0.25); font-family: 'Syne',sans-serif; font-weight: 700; }
+    .nav-btn.next:hover { transform: translateX(3px); box-shadow: 0 0 32px rgba(0,194,212,0.4); }
+    .nav-btn:disabled { opacity: 0.35; pointer-events: none; }
+    .complete-btn { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); color: var(--green); padding: 0.8rem 1.5rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter',sans-serif; }
+    .complete-btn:hover { background: rgba(34,197,94,0.15); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(34,197,94,0.15); }
+    .complete-btn.done { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); }
+
+    /* Mobile menu button */
+    .menu-btn { display: none; background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 0.7rem; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    .main { margin-left: 272px; padding: 2.5rem 2rem; width: calc(100% - 272px); min-width: 0; display: flex; gap: 2rem; align-items: flex-start; }
+    .content-area { flex: 1; min-width: 0; max-width: 720px; }
+    .right-col { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; position: sticky; top: 80px; }
+
+    /* Right column widgets */
+    .widget { background: rgba(17,30,53,0.7); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; }
+    .widget-title { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; color: rgba(0,194,212,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    /* Progress stats */
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .stat-box { background: rgba(0,194,212,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; text-align: center; }
+    .stat-box .val { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--teal); display: block; line-height: 1; }
+    .stat-box .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; display: block; }
+
+    /* Next up lessons */
+    .next-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: all 0.2s; border-radius: 8px; padding: 0.6rem 0.5rem; }
+    .next-item:last-child { border-bottom: none; }
+    .next-item:hover { background: rgba(0,194,212,0.05); padding-left: 0.75rem; }
+    .next-num { font-size: 0.7rem; color: var(--muted); min-width: 28px; font-family: 'Syne', sans-serif; }
+    .next-title { font-size: 0.82rem; color: var(--off-white); flex: 1; }
+    .next-dur { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+
+    /* NY Clock widget */
+    .clock-display { display: flex; align-items: center; justify-content: space-between; }
+    .clock-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600; }
+    .clock-dot-w { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .clock-dot-w.open { background: var(--green); animation: pulse 2s infinite; }
+    .clock-dot-w.closed { background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+    .clock-time { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--teal); }
+
+    /* Quick links */
+    .quick-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.85rem; border-radius: 10px; text-decoration: none; color: var(--muted); font-size: 0.85rem; transition: all 0.2s; border: 1px solid transparent; }
+    .quick-link:hover { background: rgba(0,194,212,0.07); border-color: rgba(0,194,212,0.2); color: var(--off-white); }
+    .quick-link-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(0,194,212,0.1); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+    /* Notes */
+    .notes-area { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--off-white); resize: none; height: 100px; outline: none; transition: border-color 0.2s; line-height: 1.6; }
+    .notes-area:focus { border-color: rgba(0,194,212,0.3); }
+    .notes-area::placeholder { color: var(--muted); }
+    .notes-save { margin-top: 0.5rem; font-size: 0.72rem; color: var(--muted); text-align: right; display: block; }
+
+    @media (max-width: 1200px) { .right-col { display: none; } }
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s; z-index: 50; width: 280px; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 1.5rem; width: 100%; }
+      .resources-grid { grid-template-columns: 1fr; }
+      .lesson-nav { flex-wrap: wrap; }
+      .menu-btn { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="page-progress"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <a class="logo" href="index.html">Método<span>Barron</span></a>
+    </div>
+    <div class="nav-right">
+      <span class="plan-chip basic" id="plan-chip">Basic</span>
+      <button class="logout-btn" onclick="handleLogout()">Sair →</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <aside class="sidebar" id="sidebar">
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span>Seu progresso</span><span id="progress-pct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Módulo 1 — Fundamentos</span>
+      <div class="sidebar-item active" onclick="loadLesson(this,'M1','Aula 1.1','O que são NQ1 e ES1?','12 min',false)"><span class="lesson-num">1.1</span>O que são NQ1 e ES1?</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M1','Aula 1.2','Como funciona a CME','10 min',false)"><span class="lesson-num">1.2</span>Como funciona a CME</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M1','Aula 1.3','Horários do pregão','8 min',false)"><span class="lesson-num">1.3</span>Horários do pregão</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M1','Aula 1.4','Margem e alavancagem','15 min',false)"><span class="lesson-num">1.4</span>Margem e alavancagem</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M1','Aula 1.5','Abrindo sua conta','10 min',false)"><span class="lesson-num">1.5</span>Abrindo sua conta</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M1','Aula 1.6','Configurando o TradingView','12 min',false)"><span class="lesson-num">1.6</span>Configurando o TradingView</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M1','Aula 1.7','Tributação para brasileiros','8 min',false)"><span class="lesson-num">1.7</span>Tributação para brasileiros</div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Módulo 2 — Fundamentos ICT</span>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.1','Smart Money','14 min',false)"><span class="lesson-num">2.1</span>Smart Money</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.2','Market Structure','12 min',false)"><span class="lesson-num">2.2</span>Market Structure</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.3','Break of Structure (BOS)','12 min',false)"><span class="lesson-num">2.3</span>BOS</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.4','Change of Character (CHoCH)','11 min',false)"><span class="lesson-num">2.4</span>CHoCH</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.5','Premium e Discount','10 min',false)"><span class="lesson-num">2.5</span>Premium e Discount</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.6','Liquidity','13 min',false)"><span class="lesson-num">2.6</span>Liquidity</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.7','Inducement','10 min',false)"><span class="lesson-num">2.7</span>Inducement</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M2','Aula 2.8','Power of 3 — AMD','12 min',false)"><span class="lesson-num">2.8</span>Power of 3 — AMD</div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Módulo 3 — Zonas de Preço ICT</span>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.1','Order Blocks (OB)','16 min',false)"><span class="lesson-num">3.1</span>Order Blocks (OB)</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.2','Breaker Blocks','12 min',false)"><span class="lesson-num">3.2</span>Breaker Blocks</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.3','Fair Value Gap (FVG)','14 min',false)"><span class="lesson-num">3.3</span>Fair Value Gap (FVG)</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.4','Inverse FVG (IFVG)','12 min',false)"><span class="lesson-num">3.4</span>Inverse FVG (IFVG)</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.5','Optimal Trade Entry (OTE)','13 min',false)"><span class="lesson-num">3.5</span>OTE</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.6','Mitigation Blocks','10 min',false)"><span class="lesson-num">3.6</span>Mitigation Blocks</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.7','Rejection Blocks','10 min',false)"><span class="lesson-num">3.7</span>Rejection Blocks</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M3','Aula 3.8','Balanced Price Range (BPR)','11 min',false)"><span class="lesson-num">3.8</span>BPR</div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Módulo 4 — Tempo e Contexto</span>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.1','Killzones','14 min',false)"><span class="lesson-num">4.1</span>Killzones</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.2','New York Open','12 min',false)"><span class="lesson-num">4.2</span>New York Open</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.3','ICT Macro','10 min',false)"><span class="lesson-num">4.3</span>ICT Macro</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.4','Daily Bias','13 min',false)"><span class="lesson-num">4.4</span>Daily Bias</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.5','Weekly Profile','12 min',false)"><span class="lesson-num">4.5</span>Weekly Profile</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.6','Monthly Profile','11 min',false)"><span class="lesson-num">4.6</span>Monthly Profile</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M4','Aula 4.7','Calendário econômico','9 min',false)"><span class="lesson-num">4.7</span>Calendário econômico</div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Módulo 5 — Execução e Gestão</span>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.1','Entry Models ICT','16 min',false)"><span class="lesson-num">5.1</span>Entry Models ICT</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.2','Stop loss no ICT','12 min',false)"><span class="lesson-num">5.2</span>Stop loss no ICT</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.3','Take profit','12 min',false)"><span class="lesson-num">5.3</span>Take profit</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.4','Regra do 1-2%','10 min',false)"><span class="lesson-num">5.4</span>Regra do 1-2%</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.5','Position sizing','11 min',false)"><span class="lesson-num">5.5</span>Position sizing</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.6','Limite de perda diária','9 min',false)"><span class="lesson-num">5.6</span>Limite de perda diária</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M5','Aula 5.7','Diário de trades ICT','10 min',false)"><span class="lesson-num">5.7</span>Diário de trades ICT</div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">Módulo 6 — Psicologia</span>
+      <div class="sidebar-item" onclick="loadLesson(this,'M6','Aula 6.1','Por que traders perdem','10 min',false)"><span class="lesson-num">6.1</span>Por que traders perdem</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M6','Aula 6.2','FOMO','8 min',false)"><span class="lesson-num">6.2</span>FOMO</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M6','Aula 6.3','Revenge trading','9 min',false)"><span class="lesson-num">6.3</span>Revenge trading</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M6','Aula 6.4','Disciplina no ICT','10 min',false)"><span class="lesson-num">6.4</span>Disciplina no ICT</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M6','Aula 6.5','Rotina do trader','12 min',false)"><span class="lesson-num">6.5</span>Rotina do trader</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'M6','Aula 6.6','Checklist ICT','8 min',false)"><span class="lesson-num">6.6</span>Checklist ICT</div>
+    </div>
+    <div class="sidebar-section" id="premium-section">
+      <span class="sidebar-label">⚡ Premium — Mentoria ao Vivo</span>
+      <div class="sidebar-item" id="pm1" onclick="loadLesson(this,'P','Sessão ao Vivo','Análise semanal NQ1 e ES1','60 min',true)"><span class="lesson-num">P.1</span>Análise semanal<span class="premium-label">PREMIUM</span></div>
+      <div class="sidebar-item" id="pm2" onclick="loadLesson(this,'P','Sessão ao Vivo','Revisão de trades da semana','60 min',true)"><span class="lesson-num">P.2</span>Revisão de trades<span class="premium-label">PREMIUM</span></div>
+      <div class="sidebar-item" id="pm3" onclick="loadLesson(this,'P','Grupo VIP','Sinais e análises em tempo real','',true)"><span class="lesson-num">P.3</span>Grupo VIP<span class="premium-label">PREMIUM</span></div>
+      <div class="sidebar-item" id="pm4" onclick="loadLesson(this,'P','Q&A','Sessão de perguntas e respostas','60 min',true)"><span class="lesson-num">P.4</span>Q&A ao vivo<span class="premium-label">PREMIUM</span></div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">🎁 Bônus</span>
+      <div class="sidebar-item" onclick="loadLesson(this,'B','Bônus 1','Configurando o simulador','12 min',false)"><span class="lesson-num">B.1</span>Configurando o simulador</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'B','Bônus 2','Plano de 8 semanas ICT','15 min',false)"><span class="lesson-num">B.2</span>Plano de 8 semanas</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'B','Bônus 3','Quando ir ao capital real','10 min',false)"><span class="lesson-num">B.3</span>Quando ir ao capital real</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'B','Bônus 4','Psicologia do capital real','11 min',false)"><span class="lesson-num">B.4</span>Psicologia do capital real</div>
+      <div class="sidebar-item" onclick="loadLesson(this,'B','Bônus 5','Escalando o capital','9 min',false)"><span class="lesson-num">B.5</span>Escalando o capital</div>
+    </div>
+    <div style="height:2rem;"></div>
+  </aside>
+
+  <main class="main">
+    <div class="content-area">
+      <div id="video-container" class="video-container">
+        <div class="video-placeholder">
+          <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <p id="video-title-display">Aula 1.1 — O que são NQ1 e ES1?</p>
+          <div class="upload-hint">▲ Adicione o vídeo desta aula aqui</div>
+        </div>
+      </div>
+
+      <div class="lesson-header">
+        <div class="module-badge" id="module-badge">Módulo 1 — Fundamentos</div>
+        <h1 id="lesson-title">O que são NQ1 e ES1?</h1>
+        <div class="lesson-meta">
+          <span>🎬 <span id="lesson-duration">12 min</span></span>
+          <span>📅 <span id="lesson-num-display">Aula 1.1</span></span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'desc')">Descrição</div>
+        <div class="tab" onclick="switchTab(this,'resources')">Materiais</div>
+      </div>
+
+      <div id="tab-desc">
+        <p class="description" id="lesson-desc">Conheça os contratos futuros do Nasdaq 100 (NQ1) e S&P 500 (ES1) — os dois mercados mais operados do mundo. Entenda o que são, como funcionam e por que são ideais para day trade com conceitos ICT.</p>
+      </div>
+
+      <div id="tab-resources" style="display:none">
+        <div class="resources-grid">
+          <div class="resource-card"><div class="resource-icon">📄</div><div><div class="resource-name">Slides da Aula</div><div class="resource-type">PDF · Adicionar arquivo</div></div></div>
+          <div class="resource-card"><div class="resource-icon">📋</div><div><div class="resource-name">Checklist ICT</div><div class="resource-type">PDF · Adicionar arquivo</div></div></div>
+        </div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="nav-btn prev" id="prev-btn" onclick="navigateLesson(-1)">← Aula anterior</button>
+        <button class="complete-btn" id="complete-btn" onclick="markComplete()">✓ Marcar como concluída</button>
+        <button class="nav-btn next" id="next-btn" onclick="navigateLesson(1)">Próxima aula →</button>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <!-- Progress Stats -->
+      <div class="widget">
+        <div class="widget-title">📊 Seu progresso</div>
+        <div class="stat-row">
+          <div class="stat-box"><span class="val" id="rc-pct">0%</span><span class="lbl">Concluído</span></div>
+          <div class="stat-box"><span class="val" id="rc-done">0</span><span class="lbl">de 47 aulas</span></div>
+        </div>
+        <div style="font-size:0.8rem;color:var(--muted);line-height:1.5;" id="rc-msg">Continue assim — cada aula é um passo para consistência! 🚀</div>
+      </div>
+
+      <!-- Next Up -->
+      <div class="widget">
+        <div class="widget-title">▶ Próximas aulas</div>
+        <div id="next-up-list"></div>
+      </div>
+
+      <!-- NY Market Clock -->
+      <div class="widget">
+        <div class="widget-title">🕐 Mercado NY</div>
+        <div class="clock-display">
+          <div class="clock-status">
+            <div class="clock-dot-w closed" id="wc-dot"></div>
+            <span id="wc-status">Carregando...</span>
+          </div>
+          <div class="clock-time" id="wc-time">--:--</div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.6rem;" id="wc-session">Verificando sessão...</div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="widget">
+        <div class="widget-title">🔗 Ferramentas</div>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;">
+          <a class="quick-link" href="https://tradingview.com" target="_blank"><div class="quick-link-icon">📈</div>TradingView</a>
+          <a class="quick-link" href="https://www.investing.com/economic-calendar/" target="_blank"><div class="quick-link-icon">📅</div>Calendário econômico</a>
+          <a class="quick-link" href="https://www.cmegroup.com/markets/equities/sp/e-mini-sandp500.html" target="_blank"><div class="quick-link-icon">💹</div>CME — ES1 Futuros</a>
+          <a class="quick-link" href="https://www.cmegroup.com/markets/equities/nasdaq/e-mini-nasdaq-100.html" target="_blank"><div class="quick-link-icon">💻</div>CME — NQ1 Futuros</a>
+          <a class="quick-link" href="https://pay.hotmart.com/K106248504R?off=dfmcjqq0" target="_blank" style="border-color:rgba(245,166,35,0.2);"><div class="quick-link-icon" style="background:rgba(245,166,35,0.1);">⚡</div><span style="color:var(--gold);font-weight:600;">Upgrade para Premium</span></a>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="widget">
+        <div class="widget-title">📝 Minhas notas</div>
+        <textarea class="notes-area" id="notes-area" placeholder="Anote suas observações sobre esta aula..." oninput="saveNotes()"></textarea>
+        <span class="notes-save" id="notes-saved"></span>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://canmukhomefokdfjrlcc.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbm11a2hvbWVmb2tkZmpybGNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNTg5MjQsImV4cCI6MjA5NjYzNDkyNH0.Aw93j4-lz6bHF3q4P9e75wHJzafddvzvwcQP0rhXdX4';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let userPlan = 'basic';
+  let completed = 0;
+  const total = 47;
+  let currentIndex = 0;
+
+  const lessons = [
+    {mod:'M1',num:'Aula 1.1',title:'O que são NQ1 e ES1?',duration:'12 min',premium:false,desc:'Conheça os contratos futuros do Nasdaq 100 (NQ1) e S&P 500 (ES1) — os dois mercados mais operados do mundo. Entenda o que são, como funcionam e por que são ideais para day trade com conceitos ICT.'},
+    {mod:'M1',num:'Aula 1.2',title:'Como funciona a CME',duration:'10 min',premium:false,desc:'A CME (Chicago Mercantile Exchange) é a bolsa onde NQ1 e ES1 são negociados. Nesta aula você aprende como a bolsa funciona, quem são os participantes e como as ordens são executadas.'},
+    {mod:'M1',num:'Aula 1.3',title:'Horários do pregão',duration:'8 min',premium:false,desc:'Descubra os horários exatos de abertura e fechamento dos futuros americanos, as sessões de maior liquidez e como adaptar esses horários para o fuso horário brasileiro.'},
+    {mod:'M1',num:'Aula 1.4',title:'Margem e alavancagem',duration:'15 min',premium:false,desc:'Entenda como funciona a margem nos futuros americanos, o poder da alavancagem e os riscos envolvidos. Aprenda a calcular o valor de cada ponto no NQ1 e ES1 em reais.'},
+    {mod:'M1',num:'Aula 1.5',title:'Abrindo sua conta',duration:'10 min',premium:false,desc:'Passo a passo para abrir sua conta em uma corretora que opere futuros americanos a partir do Brasil. Quais documentos são necessários, como enviar fundos e o que esperar do processo.'},
+    {mod:'M1',num:'Aula 1.6',title:'Configurando o TradingView',duration:'12 min',premium:false,desc:'Configure o TradingView do zero para operar NQ1 e ES1 com ICT. Aprenda a adicionar os instrumentos corretos, configurar timeframes, criar layouts e personalizar o ambiente de análise.'},
+    {mod:'M1',num:'Aula 1.7',title:'Tributação para brasileiros',duration:'8 min',premium:false,desc:'Entenda como funciona a tributação sobre lucros em futuros americanos para residentes no Brasil — alíquotas, isenções, obrigações de declaração e como organizar seus registros.'},
+    {mod:'M2',num:'Aula 2.1',title:'Smart Money',duration:'14 min',premium:false,desc:'Introdução ao conceito de Smart Money — as instituições financeiras, bancos e fundos que movem o mercado. Aprenda a pensar como ICT e a seguir o dinheiro inteligente em vez de lutar contra ele.'},
+    {mod:'M2',num:'Aula 2.2',title:'Market Structure',duration:'12 min',premium:false,desc:'A estrutura de mercado é a base de toda análise ICT. Aprenda a identificar tendências de alta e baixa através de topos e fundos, e como ler o contexto antes de qualquer entrada.'},
+    {mod:'M2',num:'Aula 2.3',title:'Break of Structure (BOS)',duration:'12 min',premium:false,desc:'O BOS confirma a continuação de uma tendência. Aprenda a identificar rompimentos legítimos de estrutura no NQ1 e ES1 e como usá-los para filtrar trades de alta probabilidade.'},
+    {mod:'M2',num:'Aula 2.4',title:'Change of Character (CHoCH)',duration:'11 min',premium:false,desc:'O CHoCH sinaliza uma possível reversão de tendência. Aprenda a diferença entre BOS e CHoCH, e quando o mercado está mudando de direção antes da maioria perceber.'},
+    {mod:'M2',num:'Aula 2.5',title:'Premium e Discount',duration:'10 min',premium:false,desc:'Preços em zona Premium estão caros — ideais para vender. Preços em zona Discount estão baratos — ideais para comprar. Aprenda a usar o equilíbrio de preços para entrar em posições com melhor custo-benefício.'},
+    {mod:'M2',num:'Aula 2.6',title:'Liquidity',duration:'13 min',premium:false,desc:'O Smart Money precisa de liquidez para executar ordens grandes. Aprenda onde estão os pools de liquidez e como o mercado frequentemente os varre antes de se mover na direção real.'},
+    {mod:'M2',num:'Aula 2.7',title:'Inducement',duration:'10 min',premium:false,desc:'O Inducement é uma armadilha criada pelo Smart Money para atrair traders de varejo para o lado errado. Aprenda a identificar esse padrão e evitar entrar justamente quando as instituições estão saindo.'},
+    {mod:'M2',num:'Aula 2.8',title:'Power of 3 — AMD',duration:'12 min',premium:false,desc:'O Power of 3 (Accumulation, Manipulation, Distribution) é um modelo diário do ICT que explica como o mercado se move em três fases previsíveis. Dominar esse conceito muda completamente sua leitura do dia.'},
+    {mod:'M3',num:'Aula 3.1',title:'Order Blocks (OB)',duration:'16 min',premium:false,desc:'Order Blocks são zonas onde o Smart Money colocou ordens institucionais. Aprenda a identificar OBs válidos no NQ1 e ES1, como distingui-los de zonas comuns e como usá-los como suporte e resistência de alta precisão.'},
+    {mod:'M3',num:'Aula 3.2',title:'Breaker Blocks',duration:'12 min',premium:false,desc:'Um Breaker Block é um Order Block que falhou e inverteu sua função. Aprenda quando um suporte vira resistência e vice-versa no contexto ICT, e como operar essas zonas de inversão com confiança.'},
+    {mod:'M3',num:'Aula 3.3',title:'Fair Value Gap (FVG)',duration:'14 min',premium:false,desc:'O Fair Value Gap é um desequilíbrio de preço causado por movimento institucional brusco. Aprenda a identificar FVGs no gráfico, entender por que o mercado tende a retornar para preenchê-los e como operar essa reação.'},
+    {mod:'M3',num:'Aula 3.4',title:'Inverse FVG (IFVG)',duration:'12 min',premium:false,desc:'O IFVG ocorre quando um FVG é preenchido e invertido, tornando-se uma nova zona de interesse. Aprenda a identificar essa configuração avançada e utilizá-la para encontrar entradas de maior precisão.'},
+    {mod:'M3',num:'Aula 3.5',title:'Optimal Trade Entry (OTE)',duration:'13 min',premium:false,desc:'O OTE é a zona de entrada ideal dentro de um movimento de retração — geralmente entre 61.8% e 79% de Fibonacci. Aprenda a combinar OTE com Order Blocks e FVGs para entrar no ponto de menor risco possível.'},
+    {mod:'M3',num:'Aula 3.6',title:'Mitigation Blocks',duration:'10 min',premium:false,desc:'Mitigation Blocks surgem quando o Smart Money retorna a uma zona para mitigar ordens anteriores. Aprenda a identificar esses blocos e por que eles representam oportunidades de entrada de alta qualidade.'},
+    {mod:'M3',num:'Aula 3.7',title:'Rejection Blocks',duration:'10 min',premium:false,desc:'Rejection Blocks são formados por velas com longos pavios que indicam forte rejeição de preço. Aprenda a identificá-los no contexto ICT e como usá-los como zonas de reversão ou continuação.'},
+    {mod:'M3',num:'Aula 3.8',title:'Balanced Price Range (BPR)',duration:'11 min',premium:false,desc:'O BPR é formado pela sobreposição de dois FVGs opostos, criando uma zona de equilíbrio de preço extremamente precisa. Aprenda a identificar e operar esse padrão avançado no NQ1 e ES1.'},
+    {mod:'M4',num:'Aula 4.1',title:'Killzones',duration:'14 min',premium:false,desc:'As Killzones são as janelas horárias de maior liquidez e movimentação institucional — London Open, New York Open e New York PM. Aprenda quais horários oferecem as melhores condições para operar ICT.'},
+    {mod:'M4',num:'Aula 4.2',title:'New York Open',duration:'12 min',premium:false,desc:'A abertura de Nova York é a sessão mais importante para quem opera NQ1 e ES1. Aprenda como ler o contexto da sessão de Londres para antecipar o movimento da NY Open e posicionar-se antes do grande movimento do dia.'},
+    {mod:'M4',num:'Aula 4.3',title:'ICT Macro',duration:'10 min',premium:false,desc:'Os ICT Macros são janelas de tempo específicas dentro de uma sessão onde ocorrem movimentos algorítmicos previsíveis. Aprenda os horários exatos e como usá-los para refinar suas entradas com maior precisão.'},
+    {mod:'M4',num:'Aula 4.4',title:'Daily Bias',duration:'13 min',premium:false,desc:'O Daily Bias é a direção predominante esperada para o dia — alta ou baixa. Aprenda a determinar o bias diário usando estrutura de mercado, liquidez e contexto HTF antes de executar qualquer operação.'},
+    {mod:'M4',num:'Aula 4.5',title:'Weekly Profile',duration:'12 min',premium:false,desc:'O perfil semanal descreve como o mercado tende a se distribuir ao longo dos cinco dias da semana. Aprenda os padrões mais comuns de semanas de alta e baixa e como usar isso para planejar trades com antecedência.'},
+    {mod:'M4',num:'Aula 4.6',title:'Monthly Profile',duration:'11 min',premium:false,desc:'O perfil mensal mostra como o Smart Money costuma distribuir o movimento ao longo do mês. Aprenda a identificar a tendência do mês corrente e alinhar seus trades com o fluxo institucional de maior prazo.'},
+    {mod:'M4',num:'Aula 4.7',title:'Calendário econômico',duration:'9 min',premium:false,desc:'Eventos macroeconômicos como NFP, CPI e decisões do Fed podem invalidar setups ICT em segundos. Aprenda a consultar o calendário econômico e como se proteger nos dias de alto impacto.'},
+    {mod:'M5',num:'Aula 5.1',title:'Entry Models ICT',duration:'16 min',premium:false,desc:'Os Entry Models são sequências estruturadas de confirmação para entrar em uma operação. Aprenda os modelos mais utilizados no ICT e como aplicá-los no NQ1 e ES1 com consistência.'},
+    {mod:'M5',num:'Aula 5.2',title:'Stop loss no ICT',duration:'12 min',premium:false,desc:'Onde colocar o stop loss é tão importante quanto onde entrar. Aprenda a posicionar o stop de forma inteligente usando estrutura ICT — acima de OBs, além de FVGs e em zonas de baixa probabilidade de retorno.'},
+    {mod:'M5',num:'Aula 5.3',title:'Take profit',duration:'12 min',premium:false,desc:'Aprenda as principais estratégias de saída no ICT — alvos em zonas de liquidez, FVGs opostos e níveis de estrutura. Entenda quando escalar saídas parciais e quando deixar a posição correr.'},
+    {mod:'M5',num:'Aula 5.4',title:'Regra do 1-2%',duration:'10 min',premium:false,desc:'A regra de risco de 1-2% por operação é o que separa traders consistentes dos que explodem a conta. Aprenda como calcular o tamanho correto de posição para nunca arriscar mais do que pode perder em qualquer trade.'},
+    {mod:'M5',num:'Aula 5.5',title:'Position sizing',duration:'11 min',premium:false,desc:'Calcule o número exato de contratos a operar com base no seu capital, no tamanho do stop e no risco por operação. Aprenda a fórmula completa de position sizing aplicada ao NQ1 e ES1.'},
+    {mod:'M5',num:'Aula 5.6',title:'Limite de perda diária',duration:'9 min',premium:false,desc:'Definir um limite de perda diária é um dos hábitos mais importantes de um trader profissional. Aprenda como estabelecer o seu e por que respeitar esse limite protege seu capital e sua mentalidade.'},
+    {mod:'M5',num:'Aula 5.7',title:'Diário de trades ICT',duration:'10 min',premium:false,desc:'O diário de trades é sua ferramenta de evolução contínua. Aprenda o que registrar em cada operação e como usar esses dados para identificar padrões e melhorar ao longo do tempo.'},
+    {mod:'M6',num:'Aula 6.1',title:'Por que traders perdem',duration:'10 min',premium:false,desc:'A maioria dos traders perde não por falta de estratégia, mas por problemas comportamentais. Nesta aula analisamos os erros mais comuns — overtrading, revenge trading e excesso de confiança — e como evitá-los.'},
+    {mod:'M6',num:'Aula 6.2',title:'FOMO',duration:'8 min',premium:false,desc:'O medo de perder uma oportunidade leva traders a entrarem tarde, perseguirem movimentos e ignorarem o plano. Aprenda a reconhecer o FOMO em tempo real e a desenvolver a disciplina de esperar apenas pelos setups certos.'},
+    {mod:'M6',num:'Aula 6.3',title:'Revenge trading',duration:'9 min',premium:false,desc:'Após uma perda, a tentação de recuperar o dinheiro rapidamente pode destruir uma conta em minutos. Aprenda a identificar o estado emocional de revenge trading e as técnicas para sair desse ciclo antes que cause dano real.'},
+    {mod:'M6',num:'Aula 6.4',title:'Disciplina no ICT',duration:'10 min',premium:false,desc:'Ter um setup perfeito não adianta nada sem a disciplina de executá-lo corretamente toda vez. Aprenda como construir disciplina operacional — desde o planejamento pré-mercado até a execução e o encerramento de cada sessão.'},
+    {mod:'M6',num:'Aula 6.5',title:'Rotina do trader',duration:'12 min',premium:false,desc:'A consistência nos resultados começa com uma rotina consistente. Aprenda a estruturar sua manhã antes do mercado abrir, o que analisar durante a sessão e como encerrar o dia com uma revisão que acelera seu aprendizado.'},
+    {mod:'M6',num:'Aula 6.6',title:'Checklist ICT',duration:'8 min',premium:false,desc:'Um checklist pré-operação elimina entradas impulsivas e garante que você só opera quando todos os critérios ICT estão alinhados. Aprenda a criar e usar o seu checklist para manter consistência e objetividade em cada trade.'},
+    {mod:'P',num:'Sessão P.1',title:'Análise semanal NQ1 e ES1',duration:'60 min',premium:true,desc:'Toda semana o Barron analisa ao vivo o NQ1 e ES1 usando conceitos ICT — identificando estrutura, zonas de interesse, bias diário e os setups mais prováveis para a semana. Exclusivo para membros Premium.'},
+    {mod:'P',num:'Sessão P.2',title:'Revisão de trades da semana',duration:'60 min',premium:true,desc:'Revisão ao vivo dos trades executados na semana — o que funcionou, o que falhou e por quê. Uma das formas mais eficazes de aprender ICT é analisar operações reais com contexto completo. Exclusivo Premium.'},
+    {mod:'P',num:'Grupo P.3',title:'Sinais e análises em tempo real',duration:'',premium:true,desc:'Acesso ao grupo VIP onde o Barron compartilha análises e sinais em tempo real durante as sessões de Nova York. Exclusivo Premium.'},
+    {mod:'P',num:'Q&A P.4',title:'Sessão de perguntas e respostas',duration:'60 min',premium:true,desc:'Sessões ao vivo dedicadas exclusivamente a responder suas dúvidas sobre ICT, análises e execução. Exclusivo Premium.'},
+    {mod:'B',num:'Bônus 1',title:'Configurando o simulador',duration:'12 min',premium:false,desc:'Aprenda a configurar o simulador gratuito do TradingView para praticar ICT sem arriscar dinheiro real.'},
+    {mod:'B',num:'Bônus 2',title:'Plano de 8 semanas ICT',duration:'15 min',premium:false,desc:'Um plano estruturado de 8 semanas para você dominar o Método Barron do zero. Cada semana tem objetivos claros — do estudo da teoria à prática no simulador.'},
+    {mod:'B',num:'Bônus 3',title:'Quando ir ao capital real',duration:'10 min',premium:false,desc:'Aprenda os critérios objetivos que indicam quando você está pronto — taxa de acerto, consistência no simulador e controle emocional comprovado.'},
+    {mod:'B',num:'Bônus 4',title:'Psicologia do capital real',duration:'11 min',premium:false,desc:'Operar com dinheiro real é completamente diferente do simulador. Aprenda como lidar com o impacto emocional do capital real e manter a mesma mentalidade do simulador.'},
+    {mod:'B',num:'Bônus 5',title:'Escalando o capital',duration:'9 min',premium:false,desc:'Depois de provar consistência com capital pequeno, é hora de crescer. Aprenda como escalar seu capital de forma segura — aumentando contratos gradualmente e protegendo o que você já conquistou.'},
+  ];
+
+  const moduleNames = {
+    'M1':'Módulo 1 — Fundamentos','M2':'Módulo 2 — Fundamentos ICT',
+    'M3':'Módulo 3 — Zonas de Preço ICT','M4':'Módulo 4 — Tempo e Contexto',
+    'M5':'Módulo 5 — Execução e Gestão','M6':'Módulo 6 — Psicologia',
+    'P':'⚡ Premium — Mentoria ao Vivo','B':'🎁 Bônus'
+  };
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    const { data } = await sb.from('profiles').select('plan').eq('email', session.user.email).single();
+    if (data && data.plan === 'premium') {
+      userPlan = 'premium';
+      document.getElementById('plan-chip').textContent = 'Premium';
+      document.getElementById('plan-chip').className = 'plan-chip premium';
+      ['pm1','pm2','pm3','pm4'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('locked'); });
+    } else {
+      ['pm1','pm2','pm3','pm4'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('locked'); });
+    }
+  }
+
+  function loadLesson(el, mod, num, title, duration, isPremium) {
+    if (isPremium && userPlan !== 'premium') {
+      document.getElementById('video-container').innerHTML = `<div class="locked-content"><div class="lock-big">🔒</div><h3>Conteúdo Premium</h3><p>Este conteúdo é exclusivo para membros Premium.<br>Faça upgrade para ter acesso às mentorias ao vivo, grupo VIP e muito mais.</p><a class="upgrade-btn" href="https://pay.hotmart.com/K106248504R?off=dfmcjqq0">⚡ Upgrade para Premium — R$97/mês</a></div>`;
+      document.getElementById('video-container').className = 'locked-container';
+    } else {
+      document.getElementById('video-container').className = 'video-container';
+      document.getElementById('video-container').innerHTML = `<div class="video-placeholder"><div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><p>${num} — ${title}</p><div class="upload-hint">▲ Adicione o vídeo desta aula aqui</div></div>`;
+    }
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    if (!isPremium || userPlan === 'premium') el.classList.add('active');
+    document.getElementById('lesson-title').textContent = title;
+    document.getElementById('lesson-duration').textContent = duration;
+    document.getElementById('lesson-num-display').textContent = num;
+    document.getElementById('module-badge').textContent = moduleNames[mod];
+    const lessonData = lessons.find(l => l.num === num && l.mod === mod);
+    document.getElementById('lesson-desc').textContent = lessonData ? lessonData.desc : '';
+    const idx = lessons.findIndex(l => l.num === num && l.mod === mod);
+    if (idx !== -1) currentIndex = idx;
+    updateNavButtons();
+    updateNextUp();
+    loadNotes();
+    // Close sidebar on mobile after selection
+    if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
+  }
+
+  function switchTab(el, tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-desc').style.display = tab === 'desc' ? 'block' : 'none';
+    document.getElementById('tab-resources').style.display = tab === 'resources' ? 'block' : 'none';
+  }
+
+  function markComplete() {
+    const active = document.querySelector('.sidebar-item.active');
+    if (active && !active.querySelector('.check-icon')) {
+      const check = document.createElement('span');
+      check.className = 'check-icon'; check.textContent = '✓';
+      active.appendChild(check);
+      completed++;
+      const pct = Math.round((completed / total) * 100);
+      document.getElementById('progress-pct').textContent = pct + '%';
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('complete-btn').classList.add('done');
+      document.getElementById('complete-btn').textContent = '✓ Concluída!';
+      updateProgressStats();
+    }
+  }
+
+  function navigateLesson(direction) {
+    const newIndex = currentIndex + direction;
+    if (newIndex < 0 || newIndex >= lessons.length) return;
+    currentIndex = newIndex;
+    const l = lessons[currentIndex];
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    loadLesson(sidebarItems[currentIndex], l.mod, l.num, l.title, l.duration, l.premium);
+  }
+
+  function updateNavButtons() {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    prevBtn.style.opacity = currentIndex === 0 ? '0.3' : '1';
+    prevBtn.style.pointerEvents = currentIndex === 0 ? 'none' : 'auto';
+    nextBtn.style.opacity = currentIndex === lessons.length - 1 ? '0.3' : '1';
+    nextBtn.style.pointerEvents = currentIndex === lessons.length - 1 ? 'none' : 'auto';
+    // Reset complete button
+    document.getElementById('complete-btn').classList.remove('done');
+    document.getElementById('complete-btn').textContent = '✓ Marcar como concluída';
+  }
+
+  function handleLogout() { sb.auth.signOut().then(() => { window.location.href = 'index.html'; }); }
+
+  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+  // ── RIGHT COLUMN WIDGETS ──────────────────────────────
+
+  // Progress stats
+  function updateProgressStats() {
+    const pct = Math.round((completed / total) * 100);
+    const rcPct = document.getElementById('rc-pct');
+    const rcDone = document.getElementById('rc-done');
+    const rcMsg = document.getElementById('rc-msg');
+    if (rcPct) rcPct.textContent = pct + '%';
+    if (rcDone) rcDone.textContent = completed;
+    const msgs = [
+      'Cada aula é um passo para consistência! 🚀',
+      'Você está no caminho certo, continue! 💪',
+      'Ótimo progresso! ICT está ficando mais claro! 📈',
+      'Mais da metade feito — você está voando! ⚡',
+      'Quase lá! Consistência é tudo no ICT! 🎯',
+      'Incrível! Você dominou o Método Barron! 🏆',
+    ];
+    const idx = Math.min(Math.floor(pct / 20), msgs.length - 1);
+    if (rcMsg) rcMsg.textContent = msgs[idx];
+  }
+
+  // Next up lessons
+  function updateNextUp() {
+    const list = document.getElementById('next-up-list');
+    if (!list) return;
+    const next = lessons.slice(currentIndex + 1, currentIndex + 4);
+    if (next.length === 0) { list.innerHTML = '<p style="font-size:0.82rem;color:var(--muted);">Você está na última aula! 🏆</p>'; return; }
+    list.innerHTML = next.map(l => `
+      <div class="next-item" onclick="goToLesson('${l.mod}','${l.num}','${l.title}','${l.duration}',${l.premium})">
+        <span class="next-num">${l.num.replace('Aula ','').replace('Sessão ','').replace('Grupo ','').replace('Q&A ','').replace('Bônus ','B')}</span>
+        <span class="next-title">${l.title}</span>
+        <span class="next-dur">${l.duration}</span>
+      </div>`).join('');
+  }
+
+  function goToLesson(mod, num, title, duration, isPremium) {
+    const idx = lessons.findIndex(l => l.num === num && l.mod === mod);
+    if (idx !== -1) {
+      currentIndex = idx;
+      const sidebarItems = document.querySelectorAll('.sidebar-item');
+      loadLesson(sidebarItems[idx], mod, num, title, duration, isPremium);
+    }
+  }
+
+  // NY Market clock
+  function updateWidgetClock() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const year = now.getFullYear();
+    const edtStart = new Date(year, 2, 8);
+    const edtEnd = new Date(year, 10, 1);
+    const isEDT = now >= edtStart && now < edtEnd;
+    const nyTime = new Date(utc + (isEDT ? -4 : -5) * 3600000);
+    const brtTime = new Date(utc + -3 * 3600000);
+    const h = nyTime.getHours(), m = nyTime.getMinutes();
+    const day = nyTime.getDay();
+    const isWeekday = day >= 1 && day <= 5;
+    const isOpen = isWeekday && (h > 9 || (h === 9 && m >= 30)) && h < 16;
+    const brtH = String(brtTime.getHours()).padStart(2,'0');
+    const brtM = String(brtTime.getMinutes()).padStart(2,'0');
+    const dot = document.getElementById('wc-dot');
+    const status = document.getElementById('wc-status');
+    const time = document.getElementById('wc-time');
+    const session = document.getElementById('wc-session');
+    if (dot) { dot.className = 'clock-dot-w ' + (isOpen ? 'open' : 'closed'); }
+    if (status) { status.textContent = isOpen ? 'Mercado aberto' : 'Mercado fechado'; status.style.color = isOpen ? 'var(--green)' : 'var(--red)'; }
+    if (time) time.textContent = brtH + ':' + brtM + ' BRT';
+    if (session) {
+      if (!isWeekday) session.textContent = 'Fim de semana — próxima sessão segunda-feira';
+      else if (isOpen) session.textContent = `NY Open · Sessão ativa agora`;
+      else if (h < 9 || (h === 9 && m < 30)) session.textContent = `Abre às ${isEDT ? '10:30' : '11:30'} BRT`;
+      else session.textContent = `Fechado · Abre amanhã às ${isEDT ? '10:30' : '11:30'} BRT`;
+    }
+  }
+  updateWidgetClock();
+  setInterval(updateWidgetClock, 30000);
+
+  // Notes — save per lesson in localStorage
+  function saveNotes() {
+    const key = 'notes_' + currentIndex;
+    const val = document.getElementById('notes-area').value;
+    localStorage.setItem(key, val);
+    const saved = document.getElementById('notes-saved');
+    if (saved) { saved.textContent = 'Salvo ✓'; setTimeout(() => { saved.textContent = ''; }, 2000); }
+  }
+  function loadNotes() {
+    const area = document.getElementById('notes-area');
+    if (area) area.value = localStorage.getItem('notes_' + currentIndex) || '';
+    const saved = document.getElementById('notes-saved');
+    if (saved) saved.textContent = '';
+  }
+
+  // ── END RIGHT COLUMN ──────────────────────────────────
+
+  // Scroll progress
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    if (total > 0) document.getElementById('page-progress').style.width = (window.scrollY / total * 100) + '%';
+  });
+
+  init();
+  updateNavButtons();
+  updateProgressStats();
+  updateNextUp();
+  loadNotes();
+</script>
+</body>
+</html>
