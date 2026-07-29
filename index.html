@@ -250,6 +250,26 @@ footer p.copy{font-size:0.78rem;color:var(--muted)}
   section{padding:4rem 0}
   .footer-inner{flex-direction:column;text-align:center}
   .footer-links{justify-content:center}
+@media (max-width: 768px) {
+  * { max-width: 100% !important; box-sizing: border-box !important; }
+  body { overflow-x: hidden !important; }
+  h1 { font-size: 2rem !important; word-break: break-word !important; }
+  h2 { font-size: 1.5rem !important; }
+  .hero-inner, .about-grid, .contact-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+  .hero-visual { display: none !important; }
+  .proof-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .modules-grid, .testi-grid, .forwhom-grid { grid-template-columns: 1fr !important; }
+  .pricing-wrap { grid-template-columns: 1fr !important; max-width: 100% !important; }
+  section { padding: 3rem 0 !important; }
+  .container { padding: 0 1rem !important; overflow: hidden !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  div[style*="grid-template-columns: 1fr 1fr"] { display: flex !important; flex-direction: column !important; }
+  div[style*="display:grid"] { display: flex !important; flex-direction: column !important; }
+  nav { padding: 0 1rem !important; }
+  .vs-table { font-size: 0.75rem !important; }
+  .cd-timer { gap: 0.4rem !important; }
+  .cd-unit { min-width: 60px !important; padding: 0.75rem 0.85rem !important; }
+  .cd-num { font-size: 1.75rem !important; }
 }
 </style>
 </head>
