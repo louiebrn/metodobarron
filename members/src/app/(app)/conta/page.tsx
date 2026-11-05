@@ -17,7 +17,7 @@ export default async function AccountPage({
 }) {
   const user = await requireUser();
   const query = await searchParams;
-  const flash = flashMessage(query.aviso);
+  const flash = flashMessage({ aviso: query.aviso });
   const sub = user.subscription;
   const demo = isDemoMode();
 

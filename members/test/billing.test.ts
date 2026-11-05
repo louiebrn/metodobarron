@@ -140,6 +140,62 @@ test("signup first, then checkout and a later cancellation", async () => {
   assert.equal(getSubscription(db, { id: created.userId, email: "leo@email.com" })?.status, "canceled");
 });
 
+test("same email unlocks after checkout, and subscription.deleted removes it", async () => {
+  const db = openDatabase(":memory:");
+  applyStripeEvent(
+    db,
+    event({
+      id: "evt_email_field",
+      type: "checkout.session.completed",
+      created: 10,
+      data: {
+        object: {
+          mode: "subscription",
+          payment_status: "paid",
+          customer: "cus_mail",
+          subscription: "sub_mail",
+          customer_email: "  Comprador@Email.com ",
+        },
+      },
+    }),
+  );
+  const created = await createUser(db, { email: "comprador@email.com", username: "comprador", password: "senha-forte" });
+  assert.equal(created.ok, true);
+  if (!created.ok) return;
+  const user = { id: created.userId, email: "comprador@email.com" };
+  assert.equal(accessFor(getSubscription(db, user)), true);
+
+  applyStripeEvent(
+    db,
+    event({
+      id: "evt_sub_active",
+      type: "customer.subscription.updated",
+      created: 20,
+      data: {
+        object: {
+          id: "sub_mail",
+          status: "active",
+          customer: "cus_mail",
+          metadata: { email: "comprador@email.com" },
+          current_period_end: 1_900_000_000,
+        },
+      },
+    }),
+  );
+  assert.equal(getSubscription(db, user)?.status, "active");
+
+  applyStripeEvent(
+    db,
+    event({
+      id: "evt_sub_deleted",
+      type: "customer.subscription.deleted",
+      created: 30,
+      data: { object: { id: "sub_mail", status: "canceled", customer: "cus_mail" } },
+    }),
+  );
+  assert.equal(accessFor(getSubscription(db, user)), false);
+});
+
 test("past_due locks modules and non-subscription checkouts are ignored", () => {
   const db = openDatabase(":memory:");
   const ignored = applyStripeEvent(

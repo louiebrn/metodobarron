@@ -201,11 +201,26 @@ function asId(value: unknown): string | null {
   return null;
 }
 
-function emailOf(object: Record<string, unknown>): string | null {
-  const details = object.customer_details as { email?: unknown } | null | undefined;
-  const raw = (typeof details?.email === "string" && details.email) || (typeof object.customer_email === "string" && object.customer_email) || "";
-  const email = raw.trim().toLowerCase();
+function textEmail(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const email = value.trim().toLowerCase();
   return email || null;
+}
+
+/** Every place Stripe may put the buyer email on a Checkout Session, Subscription, or Customer. */
+export function emailOf(object: Record<string, unknown>): string | null {
+  const details = object.customer_details as { email?: unknown } | null | undefined;
+  const metadata = object.metadata as { email?: unknown } | null | undefined;
+  const customer = object.customer;
+  const customerEmail =
+    customer && typeof customer === "object" && "email" in customer ? textEmail((customer as { email?: unknown }).email) : null;
+  return (
+    textEmail(details?.email) ||
+    textEmail(object.customer_email) ||
+    textEmail(object.email) ||
+    textEmail(metadata?.email) ||
+    customerEmail
+  );
 }
 
 function periodEndOf(object: Record<string, unknown>): number | null {

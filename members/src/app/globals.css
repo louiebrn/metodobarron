@@ -515,6 +515,47 @@ input:focus {
 .pill-ok { color: #bff7ec; border-color: rgba(46, 230, 200, 0.4); background: rgba(46, 230, 200, 0.08); }
 .pill-bad { color: #ffd0d7; border-color: rgba(255, 107, 129, 0.35); background: rgba(255, 107, 129, 0.08); }
 
+.player {
+  margin-top: 12px;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(closest-side, rgba(46, 230, 200, 0.2), transparent),
+    linear-gradient(160deg, #10211f, #0d1624);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 16px;
+}
+.player:has(iframe),
+.player:has(video) { padding: 0; }
+.player iframe,
+.player video { width: 100%; height: 100%; border: 0; }
+.player p { margin: 6px 0 0; }
+.lesson-nav { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.lesson-nav a {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+}
+.lesson-nav a.on { border-color: rgba(46, 230, 200, 0.45); background: rgba(46, 230, 200, 0.07); }
+.lesson-nav > li:not(:has(a)) {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.card fieldset { margin-top: 16px; }
+.quiz-review { display: grid; gap: 12px; margin: 12px 0 0; padding-left: 18px; }
+.quiz-review p { margin: 4px 0; }
+
 .lessons { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
 .lessons li {
   display: flex;

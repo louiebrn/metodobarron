@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { checkoutUrl, isDemoMode } from "@/lib/config";
 import { getDb } from "@/lib/db";
-import { MODULES } from "@/lib/modules";
-import { leaderboard, listProgress, monthlyScore } from "@/lib/points";
+import { getModule, MODULES } from "@/lib/modules";
+import { courseProgress, listCompletedLessons, moduleProgress, nextLesson } from "@/lib/lessons";
+import { leaderboard, monthlyScore } from "@/lib/points";
 import { requireUser } from "@/lib/session";
 import { statusLabel } from "@/lib/access";
 import { formatMonth, formatPoints, monthKey } from "@/lib/time";
@@ -26,9 +27,10 @@ export default async function DashboardPage() {
   const score = monthlyScore(db, user.id, month);
   const board = leaderboard(db, month);
   const place = board.find((row) => row.userId === user.id);
-  const progress = listProgress(db, user.id);
-  const done = new Set(progress.filter((row) => row.quiz_completed_at).map((row) => row.module_slug));
-  const next = MODULES.find((module) => !done.has(module.slug)) ?? MODULES[0];
+  const completed = listCompletedLessons(db, user.id);
+  const course = courseProgress(completed);
+  const upcoming = nextLesson(completed);
+  const nextModule = getModule(upcoming?.moduleSlug ?? MODULES[0].slug) ?? MODULES[0];
 
   return (
     <>
@@ -76,10 +78,10 @@ export default async function DashboardPage() {
           <b className="mono">{place ? `${place.rank}º` : "—"}</b>
         </article>
         <article className="card stat">
-          <span>Quizzes feitos</span>
+          <span>Aulas feitas</span>
           <b className="mono">
-            {done.size}
-            <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}> / {MODULES.length}</span>
+            {course.percent}
+            <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>%</span>
           </b>
         </article>
       </section>
@@ -89,21 +91,26 @@ export default async function DashboardPage() {
           <span className="dot" /> {user.access ? "Continuar" : "Próximo módulo"}
         </p>
         <h2>
-          Módulo {next.number} · {next.title}
+          {upcoming ? upcoming.lesson.title : "Trilha concluída"}
         </h2>
-        <p>{next.summary}</p>
+        <p>
+          Módulo {nextModule.number} · {nextModule.summary}
+        </p>
         <div className="bar" aria-hidden="true">
-          <i style={{ width: `${Math.round((done.size / MODULES.length) * 100)}%` }} />
+          <i style={{ width: `${course.percent}%` }} />
         </div>
         <div className="meta">
           <span>
-            {done.size} de {MODULES.length} quizzes
+            {course.completed} de {course.total} aulas · {course.percent}%
           </span>
-          <span>{user.access ? "Liberado" : "Trancado"}</span>
+          <span>{moduleProgress(completed, nextModule.slug).percent}% deste módulo</span>
         </div>
         <div className="row-actions" style={{ marginTop: 16 }}>
-          <Link className="btn btn-primary" href={`/modulos/${next.slug}`}>
-            {user.access ? "Abrir módulo" : "Ver módulo"}
+          <Link
+            className="btn btn-primary"
+            href={upcoming ? `/modulos/${upcoming.moduleSlug}?aula=${upcoming.lesson.slug}` : `/modulos/${nextModule.slug}`}
+          >
+            {user.access ? "Abrir aula" : "Ver módulo"}
           </Link>
           <Link className="btn btn-ghost" href="/modulos">
             Ver os 8 módulos

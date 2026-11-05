@@ -17,7 +17,7 @@ export default async function RankingPage({
 }) {
   const user = await requireUser();
   const query = await searchParams;
-  const flash = flashMessage(query.aviso);
+  const flash = flashMessage({ aviso: query.aviso });
   const month = monthKey();
   const monthLabel = formatMonth(month);
   const monthPretty = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);

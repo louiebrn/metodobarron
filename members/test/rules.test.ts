@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { hasAccess } from "../src/lib/access";
 import { rankScores } from "../src/lib/leaderboard";
-import { MODULES, practiceIdsMatch } from "../src/lib/modules";
-import { PRACTICE_IDS } from "../src/lib/scoring";
+import { MODULES, practiceIsValid, quizIsValid } from "../src/lib/modules";
 import { formatMonth, monthKey } from "../src/lib/time";
 import { validateEmail, validatePassword, validateUsername } from "../src/lib/validate";
 
@@ -73,12 +72,9 @@ test("curriculum matches the eight marketing modules", () => {
   );
   assert.equal(MODULES[5]?.central, true);
   for (const module of MODULES) {
-    assert.equal(practiceIdsMatch(module), true);
-    assert.deepEqual(
-      module.practice.map((item) => item.id),
-      [...PRACTICE_IDS],
-    );
-    assert.ok(module.quiz.correctIndex >= 0 && module.quiz.correctIndex < module.quiz.options.length);
-    assert.equal(new Set(module.quiz.options).size, module.quiz.options.length);
+    assert.equal(quizIsValid(module), true, module.slug);
+    assert.equal(practiceIsValid(module), true, module.slug);
+    assert.ok(module.lessons.length >= 3);
+    assert.ok(module.lessons.every((lesson) => lesson.minutes > 0 && lesson.slug.startsWith(module.slug)));
   }
 });

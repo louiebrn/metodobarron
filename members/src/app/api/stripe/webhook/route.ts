@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { applyStripeEvent, type StripeEventInput } from "@/lib/billing";
+import { applyStripeEvent, emailOf, type StripeEventInput } from "@/lib/billing";
 import { config, demoWebhookToken, isDemoMode } from "@/lib/config";
 import { getDb } from "@/lib/db";
 
@@ -29,11 +29,36 @@ export async function POST(request: Request) {
   }
 
   try {
+    await hydrateBuyerEmail(event);
     const result = applyStripeEvent(getDb(), event);
     return NextResponse.json({ received: true, ...result });
   } catch (error) {
     console.error("[stripe] webhook failed", event.type, error instanceof Error ? error.message : "error");
     return NextResponse.json({ error: "Falha ao processar o evento" }, { status: 500 });
+  }
+}
+
+function customerIdOf(object: Record<string, unknown>): string | null {
+  const customer = object.customer;
+  if (typeof customer === "string" && customer) return customer;
+  if (customer && typeof customer === "object" && "id" in customer && typeof (customer as { id: unknown }).id === "string") {
+    return (customer as { id: string }).id;
+  }
+  return null;
+}
+
+/** If the event has a customer id but no email, ask Stripe. Same-email signup cannot unlock without it. */
+async function hydrateBuyerEmail(event: StripeEventInput): Promise<void> {
+  const object = event.data?.object;
+  if (!object || emailOf(object) || !config.stripeSecretKey) return;
+  const customerId = customerIdOf(object);
+  if (!customerId) return;
+  try {
+    const stripe = new Stripe(config.stripeSecretKey);
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted && customer.email) object.customer_email = customer.email;
+  } catch (error) {
+    console.error("[stripe] customer email lookup failed", error instanceof Error ? error.message : "error");
   }
 }
 

@@ -2,17 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { MODULES } from "@/lib/modules";
-import { earnedThisMonth, listProgress } from "@/lib/points";
+import { listCompletedLessons, moduleProgress } from "@/lib/lessons";
 import { requireUser } from "@/lib/session";
-import { monthKey } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Módulos" };
 
 export default async function ModulesPage() {
   const user = await requireUser();
-  const db = getDb();
-  const month = monthKey();
-  const progress = new Map(listProgress(db, user.id).map((row) => [row.module_slug, row]));
+  const completed = listCompletedLessons(getDb(), user.id);
 
   return (
     <>
@@ -27,9 +24,7 @@ export default async function ModulesPage() {
       </header>
       <div className="module-list">
         {MODULES.map((module) => {
-          const row = progress.get(module.slug);
-          const earned = user.access ? earnedThisMonth(db, user.id, module.slug, month) : null;
-          const quizDone = Boolean(row?.quiz_completed_at);
+          const progress = moduleProgress(completed, module.slug);
           return (
             <Link
               key={module.slug}
@@ -53,7 +48,9 @@ export default async function ModulesPage() {
                   Trancado
                 </span>
               ) : (
-                <span className={quizDone ? "pill pill-ok" : "pill"}>{earned?.quiz ? "Quiz do mês" : quizDone ? "Rever" : "Abrir"}</span>
+                <span className={progress.percent === 100 ? "pill pill-ok" : "pill"}>
+                  {progress.percent === 100 ? "100%" : progress.percent > 0 ? `${progress.percent}%` : "Abrir"}
+                </span>
               )}
             </Link>
           );

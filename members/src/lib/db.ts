@@ -80,6 +80,34 @@ CREATE TABLE IF NOT EXISTS stripe_events (
   type TEXT NOT NULL,
   received_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS lesson_progress (
+  user_id TEXT NOT NULL,
+  module_slug TEXT NOT NULL,
+  lesson_slug TEXT NOT NULL,
+  completed_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, module_slug, lesson_slug)
+);
+
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+  user_id TEXT NOT NULL,
+  module_slug TEXT NOT NULL,
+  month_key TEXT NOT NULL,
+  answers TEXT NOT NULL,
+  correct_count INTEGER NOT NULL,
+  points INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, module_slug, month_key)
+);
+
+CREATE TABLE IF NOT EXISTS practice_marks (
+  user_id TEXT NOT NULL,
+  module_slug TEXT NOT NULL,
+  month_key TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, module_slug, month_key, item_id)
+);
 `;
 
 export type Sql = string | number | bigint | null | Uint8Array;

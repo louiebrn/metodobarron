@@ -57,26 +57,39 @@ export type AwardResult =
   | { ok: true; awarded: boolean; points: number; total: number; month: string }
   | { ok: false; error: string };
 
+/**
+ * Record a quiz or practice score for this month.
+ * A later call only adds the difference when the new score is higher, so retries cannot farm points.
+ * A zero quiz score still counts as the month's attempt.
+ */
 export function awardPoints(
   db: DatabaseSync,
-  input: { userId: string; moduleSlug: string; kind: PointKind; now?: number },
+  input: { userId: string; moduleSlug: string; kind: PointKind; points?: number; now?: number },
 ): AwardResult {
   const module = getModule(input.moduleSlug);
   if (!module) return { ok: false, error: "Módulo desconhecido." };
   const now = input.now ?? Date.now();
   const month = monthKey(new Date(now));
-  const points = pointsFor(input.kind);
+  const cap = pointsFor(input.kind);
+  const requested = input.points ?? cap;
+  if (!Number.isInteger(requested) || requested < 0 || requested > cap) {
+    return { ok: false, error: "Pontuação inválida." };
+  }
 
   return withTx(db, () => {
-    const inserted = db
-      .prepare(
-        `INSERT INTO point_events (id, user_id, kind, module_slug, points, month_key, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT (user_id, kind, module_slug, month_key) DO NOTHING`,
-      )
-      .run(randomUUID(), input.userId, input.kind, input.moduleSlug, points, month, now);
+    const existing = one<{ points: number }>(
+      db,
+      `SELECT points FROM point_events WHERE user_id = ? AND kind = ? AND module_slug = ? AND month_key = ?`,
+      input.userId,
+      input.kind,
+      input.moduleSlug,
+      month,
+    );
+    const previous = existing?.points ?? 0;
+    const next = Math.max(previous, requested);
+    const delta = existing ? next - previous : next;
 
-    if (inserted.changes === 0) {
+    if (existing && delta === 0) {
       const total = one<{ points: number }>(
         db,
         "SELECT points FROM monthly_scores WHERE user_id = ? AND month_key = ?",
@@ -86,19 +99,32 @@ export function awardPoints(
       return { ok: true as const, awarded: false, points: 0, total: total?.points ?? 0, month };
     }
 
-    const quizPoints = input.kind === "quiz" ? points : 0;
-    const practicePoints = input.kind === "practice" ? points : 0;
-    db.prepare(
-      `INSERT INTO monthly_scores (
-         user_id, month_key, points, quiz_points, practice_points, score_reached_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT (user_id, month_key) DO UPDATE SET
-         points = points + excluded.points,
-         quiz_points = quiz_points + excluded.quiz_points,
-         practice_points = practice_points + excluded.practice_points,
-         score_reached_at = excluded.score_reached_at,
-         updated_at = excluded.updated_at`,
-    ).run(input.userId, month, points, quizPoints, practicePoints, now, now);
+    if (!existing) {
+      db.prepare(
+        `INSERT INTO point_events (id, user_id, kind, module_slug, points, month_key, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      ).run(randomUUID(), input.userId, input.kind, input.moduleSlug, next, month, now);
+    } else {
+      db.prepare(
+        `UPDATE point_events SET points = ? WHERE user_id = ? AND kind = ? AND module_slug = ? AND month_key = ?`,
+      ).run(next, input.userId, input.kind, input.moduleSlug, month);
+    }
+
+    if (delta > 0) {
+      const quizPoints = input.kind === "quiz" ? delta : 0;
+      const practicePoints = input.kind === "practice" ? delta : 0;
+      db.prepare(
+        `INSERT INTO monthly_scores (
+           user_id, month_key, points, quiz_points, practice_points, score_reached_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (user_id, month_key) DO UPDATE SET
+           points = points + excluded.points,
+           quiz_points = quiz_points + excluded.quiz_points,
+           practice_points = practice_points + excluded.practice_points,
+           score_reached_at = excluded.score_reached_at,
+           updated_at = excluded.updated_at`,
+      ).run(input.userId, month, delta, quizPoints, practicePoints, now, now);
+    }
 
     const quizAt = input.kind === "quiz" ? now : null;
     const practiceAt = input.kind === "practice" ? now : null;
@@ -117,7 +143,7 @@ export function awardPoints(
       input.userId,
       month,
     );
-    return { ok: true as const, awarded: true, points, total: total?.points ?? points, month };
+    return { ok: true as const, awarded: delta > 0, points: delta, total: total?.points ?? 0, month };
   });
 }
 

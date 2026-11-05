@@ -68,10 +68,13 @@ Copie `.env.example` para `.env.local` só se for mudar algum padrão.
 | Quiz do módulo (resposta certa) | 10 | 1 vez por módulo por mês |
 | Prática (três itens marcados) | 5 | 1 vez por módulo por mês |
 
-- Resposta errada não tira ponto e pode ser refeita.
+- Cada módulo tem **5 perguntas**, 2 pontos cada (máximo 10). É **uma tentativa por mês**. A nota é a soma das certas. No mês seguinte o quiz zera e pode ser feito de novo.
+- A prática é um checklist. Cada item tem pontos (2 + 2 + 1 = 5). Dá para marcar aos poucos: a nota do mês **só sobe**, nunca desce.
 - Máximo no mês: 8 × 10 + 8 × 5 = **120 pontos**.
 - O mês é o calendário de **America/Sao_Paulo** (Brasília, sem horário de verão). Às 00:00 do dia 1º o placar daquele mês para de receber pontos novos; o histórico do mês anterior continua no banco, o ranking da tela mostra só o mês corrente.
-- Concluir o quiz também marca o módulo como estudado (isso não zera no mês seguinte). Os pontos, sim.
+- Aulas concluídas ficam em `lesson_progress` e **não** zeram no mês. A barra do início e a de cada módulo usam essa conta (aulas feitas ÷ aulas do curso, ou do módulo).
+
+Para publicar o vídeo de uma aula, preencha `videoUrl` em `members/src/lib/modules.ts` com um link do YouTube ou um `.mp4` em `https://`. Vazio mostra o player placeholder e a duração em minutos.
 
 Quem não tem assinatura ativa não ganha pontos. Status com acesso: `active` e `trialing`, e só se `current_period_end` ainda não passou. `past_due`, `canceled`, `unpaid`, `incomplete`, `paused` e `inactive` bloqueiam os módulos.
 
@@ -169,12 +172,41 @@ Em **Conta → Gerir assinatura**:
 - Sem a chave, use `STRIPE_CUSTOMER_PORTAL_LOGIN_URL` (link de login do portal, nas configurações de Billing).
 - Ative o portal no Dashboard (cancelar, atualizar cartão, ver faturas) antes de mandar aluno para lá.
 
-### Payment Link: o que conferir no Dashboard
+### Payment Link: o que colar no Dashboard
 
-- Preço recorrente de R$97/mês (o link acima já é esse).
-- URL de sucesso: `https://metodobarron.com/obrigado.html` — o botão dessa página aponta para `https://membros.metodobarron.com/criar-conta`.
-- URL de cancelamento: a home `https://metodobarron.com/`.
-- Não coloque a chave secreta no GitHub Pages. O marketing só conhece o link público.
+Abra o Payment Link `plink_1UYTL9COW8xQ7IOjQ0gliHvp` (modo live) → **After payment** / página de confirmação.
+
+Cole esta URL de sucesso, exatamente:
+
+`https://membros.metodobarron.com/criar-conta?pago=1`
+
+É a tela de criar conta. O `?pago=1` só mostra o aviso “use o mesmo e-mail da Stripe”. O desbloqueio não depende desse parâmetro: o webhook grava o e-mail do checkout e, quando a pessoa cria a conta com **esse mesmo e-mail**, `subscriptions.user_id` é preenchido e `accessActive` fica verdadeiro (`active` ou `trialing`).
+
+Cancelamento do checkout: `https://metodobarron.com/`.
+
+Variáveis no host do app (produção):
+
+```bash
+APP_URL=https://membros.metodobarron.com
+MARKETING_URL=https://metodobarron.com
+DEMO_MODE=false
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PAYMENT_LINK_URL=https://buy.stripe.com/cNi6oG8sBewcaWk7tldfG01
+STRIPE_PAYMENT_LINK_ID=plink_1UYTL9COW8xQ7IOjQ0gliHvp
+```
+
+Webhook live: `https://membros.metodobarron.com/api/stripe/webhook` com `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted` (os outros `customer.subscription.*` também podem ficar marcados).
+
+O que cada evento faz:
+
+- `checkout.session.completed` com `mode=subscription` e pagamento `paid`: grava o e-mail (de `customer_details.email`, `customer_email` ou, se faltar, da Customer API usando `STRIPE_SECRET_KEY`) e marca `active`.
+- `customer.subscription.updated`: copia o `status` da Stripe (`active` libera, `past_due` / `canceled` / `unpaid` trancam). Se o evento não trouxer e-mail, o app reaproveita o `cus_`/`sub_` já gravados e, com a chave secreta, busca o e-mail do cliente.
+- `customer.subscription.deleted`: força `canceled` e tranca na hora.
+
+Sem `STRIPE_WEBHOOK_SECRET`, o `npm run dev` continua aceitando o webhook de demonstração (`Authorization: Bearer demo-local`) e o botão **Ligar acesso de demonstração** em Conta. Em produção deixe `DEMO_MODE=false`.
+
+Não coloque a chave secreta no GitHub Pages. O marketing só conhece o link público.
 
 ## Publicar o app
 
@@ -203,7 +235,10 @@ Não commite `.env`, `.env.local` nem `data/`.
 | `users` | E-mail, username, hash scrypt da senha. |
 | `sessions` | Cookie `mb_session` (só o SHA-256 do token). 30 dias. |
 | `subscriptions` | Uma linha por assinatura. Liga e-mail, usuário, `cus_`, `sub_`, status e fim do período. `source` é `stripe` ou `demo`. |
-| `progress` | Primeira vez que a pessoa passou no quiz ou na prática daquele módulo (não zera no mês). |
+| `progress` | Primeira vez que a pessoa enviou o quiz ou a prática daquele módulo. |
+| `lesson_progress` | Aula marcada como concluída. Não zera no mês. A porcentagem do curso sai daqui. |
+| `quiz_attempts` | Respostas do quiz daquele mês (uma linha por usuário, módulo e mês). |
+| `practice_marks` | Itens do checklist marcados naquele mês. |
 | `point_events` | Cada ponto concedido. Único por usuário + tipo + módulo + mês. |
 | `monthly_scores` | Soma do mês, separada em quiz e prática, com o instante em que o total foi alcançado. |
 | `stripe_events` | Id do evento, para não processar duas vezes. |

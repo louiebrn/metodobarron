@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { submitPractice, submitQuiz } from "@/actions/learn";
+import { completeLesson, submitPractice, submitQuiz } from "@/actions/learn";
 import { checkoutUrl } from "@/lib/config";
-import { getDb } from "@/lib/db";
-import { getModule, MODULES } from "@/lib/modules";
+import { getDb, many, one } from "@/lib/db";
+import { lessonKey, listCompletedLessons, moduleProgress } from "@/lib/lessons";
+import { getModule, MODULES, type Lesson } from "@/lib/modules";
 import { flashMessage } from "@/lib/notices";
 import { earnedThisMonth } from "@/lib/points";
-import { QUIZ_POINTS, PRACTICE_POINTS } from "@/lib/scoring";
+import { PRACTICE_POINTS, QUIZ_POINTS } from "@/lib/scoring";
 import { requireUser } from "@/lib/session";
+import { monthKey } from "@/lib/time";
+import { videoEmbed } from "@/lib/video";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -21,28 +24,59 @@ export default async function ModulePage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ aviso?: string; pts?: string }>;
+  searchParams: Promise<{ aviso?: string; pts?: string; acertos?: string; total?: string; aula?: string }>;
 }) {
   const { slug } = await params;
   const module = getModule(slug);
   if (!module) notFound();
   const query = await searchParams;
-  const flash = flashMessage(query.aviso, query.pts);
+  const flash = flashMessage(query);
   const user = await requireUser();
-  const earned = earnedThisMonth(getDb(), user.id, module.slug);
+  const db = getDb();
+  const month = monthKey();
+  const earned = earnedThisMonth(db, user.id, module.slug, month);
+  const completed = listCompletedLessons(db, user.id);
+  const progress = moduleProgress(completed, module.slug);
+  const selected = module.lessons.find((lesson) => lesson.slug === query.aula) ?? module.lessons[0];
   const index = MODULES.findIndex((item) => item.slug === module.slug);
   const previous = index > 0 ? MODULES[index - 1] : null;
   const next = index < MODULES.length - 1 ? MODULES[index + 1] : null;
+  const attempt = one<{ answers: string }>(
+    db,
+    "SELECT answers FROM quiz_attempts WHERE user_id = ? AND module_slug = ? AND month_key = ?",
+    user.id,
+    module.slug,
+    month,
+  );
+  const answers = attempt ? (JSON.parse(attempt.answers) as number[]) : null;
+  const marked = new Set(
+    many<{ item_id: string }>(
+      db,
+      "SELECT item_id FROM practice_marks WHERE user_id = ? AND module_slug = ? AND month_key = ?",
+      user.id,
+      module.slug,
+      month,
+    ).map((row) => row.item_id),
+  );
 
   return (
     <>
       <header className="page-head">
         <p className="kicker">
           <span className="dot" /> Módulo {module.number} de 8
-          {module.central ? <span className="core"> · módulo central</span> : null}
+          {module.central ? " · central" : ""}
         </p>
         <h1>{module.title}</h1>
         <p>{module.summary}</p>
+        <div className="bar" aria-hidden="true">
+          <i style={{ width: `${progress.percent}%` }} />
+        </div>
+        <div className="meta">
+          <span>
+            {progress.completed} de {progress.total} aulas · {progress.percent}%
+          </span>
+          <span>{user.access ? "Liberado" : "Trancado"}</span>
+        </div>
       </header>
 
       {flash ? (
@@ -63,8 +97,8 @@ export default async function ModulePage({
             <div>
               <h2>Este módulo abre com a assinatura.</h2>
               <p>
-                A aula, o quiz e a prática ficam disponíveis enquanto a mensalidade estiver ativa. O checkout usa o
-                e-mail desta conta.
+                As aulas, o quiz e a prática ficam disponíveis enquanto a mensalidade estiver ativa. Crie a conta com o
+                mesmo e-mail da Stripe.
               </p>
             </div>
             <a className="btn btn-primary" href={checkoutUrl(user)}>
@@ -73,76 +107,102 @@ export default async function ModulePage({
           </section>
           <section className="card">
             <h2>O que tem aqui</h2>
-            <p className="lesson-note">A trilha já está montada. O conteúdo abre junto com a assinatura.</p>
-            <ul className="lessons">
+            <ul className="lesson-nav">
               {module.lessons.map((lesson) => (
-                <li key={lesson}>{lesson}</li>
+                <li key={lesson.slug}>
+                  <span>{lesson.title}</span>
+                  <span className="mono dim">{lesson.minutes} min</span>
+                </li>
               ))}
             </ul>
           </section>
         </div>
       ) : (
         <div className="stack">
+          {selected ? <LessonPlayer moduleSlug={module.slug} lesson={selected} done={completed.has(lessonKey(module.slug, selected.slug))} /> : null}
+
           <section className="card">
             <h2>Aulas</h2>
-            <p className="lesson-note">Os vídeos entram aqui. Por enquanto, o roteiro de cada aula:</p>
-            <ul className="lessons">
-              {module.lessons.map((lesson) => (
-                <li key={lesson}>
-                  <span>
-                    {lesson}
-                    <div className="dim">Vídeo em breve</div>
-                  </span>
-                </li>
-              ))}
+            <ul className="lesson-nav">
+              {module.lessons.map((lesson, lessonIndex) => {
+                const done = completed.has(lessonKey(module.slug, lesson.slug));
+                const current = lesson.slug === selected?.slug;
+                return (
+                  <li key={lesson.slug}>
+                    <Link href={`/modulos/${module.slug}?aula=${lesson.slug}`} className={current ? "on" : undefined}>
+                      <span className="mono dim">{String(lessonIndex + 1).padStart(2, "0")}</span>
+                      <span>
+                        {lesson.title}
+                        <small className="dim"> {lesson.minutes} min{lesson.videoUrl ? "" : " · vídeo em breve"}</small>
+                      </span>
+                      <span className={done ? "pill pill-ok" : "pill"}>{done ? "Feita" : "Abrir"}</span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </section>
 
-          <section className="card">
-            <h2>Quiz · {QUIZ_POINTS} pontos</h2>
-            <p className="muted">Uma vez por módulo em cada mês. Errar não tira ponto.</p>
-            {earned.quiz ? (
-              <p className="alert alert-ok">Quiz deste mês já pontuado. {module.quiz.explanation}</p>
+          <section className="card" id="quiz">
+            <h2>Quiz · até {QUIZ_POINTS} pontos</h2>
+            <p className="muted">Cinco perguntas, 2 pontos cada. Uma tentativa por mês. Errar não tira ponto que você já tinha de outra atividade.</p>
+            {answers ? (
+              <ol className="quiz-review">
+                {module.quiz.map((question, questionIndex) => {
+                  const picked = answers[questionIndex];
+                  const right = picked === question.correctIndex;
+                  return (
+                    <li key={question.question}>
+                      <p>{question.question}</p>
+                      <p className={right ? "alert alert-ok" : "alert alert-warn"}>
+                        {right ? "Certa." : `A resposta marcada foi «${question.options[picked] ?? "—"}».`} {question.explanation}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ol>
             ) : (
               <form action={submitQuiz}>
                 <input type="hidden" name="slug" value={module.slug} />
-                <fieldset>
-                  <legend>{module.quiz.question}</legend>
-                  <div className="options">
-                    {module.quiz.options.map((option, optionIndex) => (
-                      <label className="option" key={option}>
-                        <input type="radio" name="answer" value={optionIndex} required />
-                        <span>{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                {module.quiz.map((question, questionIndex) => (
+                  <fieldset key={question.question}>
+                    <legend>
+                      {questionIndex + 1}. {question.question}
+                    </legend>
+                    <div className="options">
+                      {question.options.map((option, optionIndex) => (
+                        <label className="option" key={option}>
+                          <input type="radio" name={`q${questionIndex}`} value={optionIndex} required />
+                          <span>{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                ))}
                 <button className="btn btn-primary" type="submit">
-                  Enviar resposta
+                  Enviar quiz
                 </button>
               </form>
             )}
           </section>
 
-          <section className="card">
-            <h2>Prática · {PRACTICE_POINTS} pontos</h2>
-            <p className="muted">Registre a prática no simulador. Também vale uma vez por mês.</p>
-            {earned.practice ? (
-              <p className="alert alert-ok">Prática deste mês já registrada.</p>
-            ) : (
-              <form action={submitPractice}>
-                <input type="hidden" name="slug" value={module.slug} />
-                {module.practice.map((item) => (
-                  <label className="check" key={item.id}>
-                    <input type="checkbox" name={item.id} />
-                    <span>{item.label}</span>
-                  </label>
-                ))}
-                <button className="btn btn-primary" type="submit">
-                  Registrar prática
-                </button>
-              </form>
-            )}
+          <section className="card" id="pratica">
+            <h2>Prática · até {PRACTICE_POINTS} pontos</h2>
+            <p className="muted">Cada item vale os pontos ao lado. Você pode completar o checklist ao longo do mês; a nota só sobe.</p>
+            <form action={submitPractice}>
+              <input type="hidden" name="slug" value={module.slug} />
+              {module.practice.map((task) => (
+                <label className="check" key={task.id}>
+                  <input type="checkbox" name={task.id} defaultChecked={marked.has(task.id)} />
+                  <span>
+                    {task.label} <b className="mono">+{task.points}</b>
+                  </span>
+                </label>
+              ))}
+              <button className="btn btn-primary" type="submit">
+                Salvar checklist
+              </button>
+            </form>
           </section>
         </div>
       )}
@@ -163,5 +223,40 @@ export default async function ModulePage({
         ) : null}
       </div>
     </>
+  );
+}
+
+function LessonPlayer({ moduleSlug, lesson, done }: { moduleSlug: string; lesson: Lesson; done: boolean }) {
+  const embed = videoEmbed(lesson.videoUrl);
+  return (
+    <section className="card">
+      <p className="kicker">
+        <span className="dot" /> Aula · {lesson.minutes} min
+      </p>
+      <h2>{lesson.title}</h2>
+      <div className="player">
+        {embed?.kind === "youtube" ? (
+          <iframe src={embed.src} title={lesson.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+        ) : embed?.kind === "file" ? (
+          <video controls playsInline preload="metadata" src={embed.src} />
+        ) : (
+          <div>
+            <strong>Player</strong>
+            <p className="muted">O vídeo desta aula ainda não foi publicado. A duração prevista é {lesson.minutes} min.</p>
+          </div>
+        )}
+      </div>
+      {done ? (
+        <p className="alert alert-ok">Aula concluída. O progresso desta conta ficou salvo.</p>
+      ) : (
+        <form action={completeLesson}>
+          <input type="hidden" name="slug" value={moduleSlug} />
+          <input type="hidden" name="lesson" value={lesson.slug} />
+          <button className="btn btn-primary" type="submit">
+            Marcar aula como concluída
+          </button>
+        </form>
+      )}
+    </section>
   );
 }
