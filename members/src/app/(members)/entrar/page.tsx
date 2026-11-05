@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth-forms";
 import { Logo } from "@/components/logo";
-import { config } from "@/lib/config";
 import { getCurrentUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Entrar" };
@@ -12,7 +11,7 @@ export default async function LoginPage() {
   return (
     <div className="auth">
       <div className="auth-card">
-        <Logo href={config.marketingUrl} />
+        <Logo href="/" />
         <p className="kicker">
           <span className="dot" /> Entrar
         </p>

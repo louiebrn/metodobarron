@@ -1,39 +1,56 @@
-import { redirect } from "next/navigation";
-import { Logo } from "@/components/logo";
+import type { Metadata } from "next";
+import { MarketingBoot } from "@/components/marketing/home-client";
+import { homeBodyHtml } from "@/components/marketing/home-body";
 import { config } from "@/lib/config";
-import { getCurrentUser } from "@/lib/session";
+import "@/components/marketing/home.css";
 
-export default async function HomePage() {
-  const user = await getCurrentUser();
-  if (user) redirect("/painel");
+const description =
+  "Método Barron, curso para iniciantes por Barron (+78 mil seguidores no Instagram e TikTok): aprenda a operar os futuros americanos NQ (Nasdaq-100) e ES (S&P 500) do jeito certo, do Brasil para o mercado americano, começando no simulador, com gestão de risco e sem promessas milagrosas. De R$197 por R$97 no lançamento.";
 
+const socialDescription =
+  "Aprenda a operar os futuros NQ e ES do jeito certo com Barron (+78 mil seguidores no Instagram e TikTok): no simulador, com gestão de risco e sem promessas milagrosas. Preço de lançamento: R$97.";
+
+export const metadata: Metadata = {
+  title: {
+    absolute:
+      "Método Barron | Day trade nos futuros NQ e ES com método, do simulador ao plano de 30 dias",
+  },
+  description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Método Barron: day trade com método de verdade",
+    description: socialDescription,
+    url: "/",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        type: "image/png",
+        alt: "Método Barron — prática, risco e disciplina.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Método Barron: day trade com método de verdade",
+    description:
+      "Curso educacional de day trade nos futuros NQ e ES por Barron (+78 mil seguidores no Instagram e TikTok): simulador, gestão de risco e um plano de 30 dias.",
+    images: ["/og-image.png"],
+  },
+};
+
+function escapeAttr(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+export default function HomePage() {
+  const checkout = escapeAttr(config.paymentLinkUrl);
+  const html = homeBodyHtml.replaceAll('href="#checkout"', `href="${checkout}"`);
   return (
-    <div className="auth">
-      <div className="auth-card">
-        <Logo href={config.marketingUrl} />
-        <p className="kicker">
-          <span className="dot" /> Área de membros
-        </p>
-        <h1>
-          Seu plano, <span className="grad">no seu ritmo.</span>
-        </h1>
-        <p className="lede">
-          Depois da assinatura de R$97 por mês, crie sua conta com o mesmo e-mail da compra. Os 8 módulos ficam
-          liberados enquanto a assinatura estiver ativa.
-        </p>
-        <div className="row-actions" style={{ marginTop: 22 }}>
-          <a className="btn btn-primary" href="/criar-conta">
-            Criar conta
-          </a>
-          <a className="btn btn-ghost" href="/entrar">
-            Entrar
-          </a>
-        </div>
-        <p className="fine">
-          Conteúdo educacional. Não é recomendação de investimento.{" "}
-          <a href={config.marketingUrl}>Voltar ao site</a>
-        </p>
-      </div>
-    </div>
+    <>
+      <div className="mkt js" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
+      <MarketingBoot checkoutUrl={config.paymentLinkUrl} />
+    </>
   );
 }

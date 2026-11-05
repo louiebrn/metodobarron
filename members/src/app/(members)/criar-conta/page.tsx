@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { SignupForm } from "@/components/auth-forms";
 import { Logo } from "@/components/logo";
-import { config } from "@/lib/config";
 import { getCurrentUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Criar conta" };
@@ -17,7 +16,7 @@ export default async function SignupPage({
   return (
     <div className="auth">
       <div className="auth-card">
-        <Logo href={config.marketingUrl} />
+        <Logo href="/" />
         <p className="kicker">
           <span className="dot" /> Criar conta
         </p>

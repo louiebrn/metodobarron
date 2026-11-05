@@ -1,6 +1,7 @@
-# GitHub Pages uses Jekyll. Publish the static marketing site only.
-# The members app in /members is a Next.js project deployed on its own host
-# (see members/README.md). Excluding it keeps metodobarron.com serving the
-# existing HTML and avoids publishing the app source at /members/*.
+# Legacy GitHub Pages config. Production is the Next.js app in /members,
+# deployed to Vercel with metodobarron.com pointed at that project.
+# GitHub Pages is no longer the host for the marketing site.
+# If Pages is still enabled by mistake, excluding members/ keeps the app
+# source off the leftover static site.
 exclude:
   - members

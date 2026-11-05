@@ -1,8 +1,8 @@
-# Área de membros — Método Barron
+# Método Barron — um site só
 
-App Next.js da área de membros. O site de marketing continua estático na raiz do repositório (GitHub Pages em `metodobarron.com`). Este diretório é publicado à parte, no subdomínio `membros.metodobarron.com`.
+App Next.js que serve o marketing e a área de membros no mesmo domínio. Em produção, `metodobarron.com` aponta para este diretório na **Vercel**. O GitHub Pages **não** é mais o host de produção do site de marketing.
 
-A interface está em português do Brasil. Em desenvolvimento (`npm run dev`) o app abre em **modo demonstração**, sem chave secreta da Stripe.
+A interface está em português do Brasil. Em desenvolvimento (`npm run dev`) o app abre em **modo demonstração**, sem chave secreta da Stripe. As páginas de marketing (`/`, `/afiliados`, `/obrigado`, `/privacidade`, `/termos`) não leem segredo da Stripe: o botão de compra usa só o Payment Link público.
 
 ## O que já funciona
 
@@ -49,8 +49,8 @@ Copie `.env.example` para `.env.local` só se for mudar algum padrão.
 | Variável | Obrigatória para vender | Função |
 | --- | --- | --- |
 | `DATABASE_PATH` | Não | Caminho do SQLite. Padrão `./data/members.db`. |
-| `APP_URL` | Sim, em produção | URL pública deste app. Padrão `http://localhost:3000`. Usada na volta do portal da Stripe. |
-| `MARKETING_URL` | Não | Link “voltar ao site”. Padrão `https://metodobarron.com`. |
+| `APP_URL` | Sim, em produção | URL pública do site. Padrão local `http://localhost:3000`. Em produção: `https://metodobarron.com`. Usada na volta do portal da Stripe. |
+| `MARKETING_URL` | Não | Origem pública do site. Padrão `https://metodobarron.com`. Em produção é o mesmo valor de `APP_URL`. O link “Voltar ao site” aponta para `/` (mesmo domínio). |
 | `DEMO_MODE` | Sim, `false` em produção | Liga o botão de acesso falso e o webhook sem assinatura. Se ficar vazio: ligado no `next dev` quando não há `STRIPE_WEBHOOK_SECRET`; desligado com `NODE_ENV=production`. |
 | `DEMO_WEBHOOK_TOKEN` | Não | Bearer do webhook de demonstração. Padrão `demo-local`. |
 | `STRIPE_PAYMENT_LINK_URL` | Não | Payment Link já no ar. Padrão `https://buy.stripe.com/cNi6oG8sBewcaWk7tldfG01`. |
@@ -101,7 +101,7 @@ Fluxo combinado: a pessoa **paga primeiro** e **depois cria a conta** com o **me
 
 ### Webhook
 
-Endpoint: `POST https://membros.metodobarron.com/api/stripe/webhook`
+Endpoint: `POST https://metodobarron.com/api/stripe/webhook`
 
 No Dashboard da Stripe (modo live), crie o endpoint e marque:
 
@@ -178,7 +178,7 @@ Abra o Payment Link `plink_1UYTL9COW8xQ7IOjQ0gliHvp` (modo live) → **After pay
 
 Cole esta URL de sucesso, exatamente:
 
-`https://membros.metodobarron.com/criar-conta?pago=1`
+`https://metodobarron.com/criar-conta?pago=1`
 
 É a tela de criar conta. O `?pago=1` só mostra o aviso “use o mesmo e-mail da Stripe”. O desbloqueio não depende desse parâmetro: o webhook grava o e-mail do checkout e, quando a pessoa cria a conta com **esse mesmo e-mail**, `subscriptions.user_id` é preenchido e `accessActive` fica verdadeiro (`active` ou `trialing`).
 
@@ -187,7 +187,7 @@ Cancelamento do checkout: `https://metodobarron.com/`.
 Variáveis no host do app (produção):
 
 ```bash
-APP_URL=https://membros.metodobarron.com
+APP_URL=https://metodobarron.com
 MARKETING_URL=https://metodobarron.com
 DEMO_MODE=false
 STRIPE_SECRET_KEY=sk_live_...
@@ -196,7 +196,9 @@ STRIPE_PAYMENT_LINK_URL=https://buy.stripe.com/cNi6oG8sBewcaWk7tldfG01
 STRIPE_PAYMENT_LINK_ID=plink_1UYTL9COW8xQ7IOjQ0gliHvp
 ```
 
-Webhook live: `https://membros.metodobarron.com/api/stripe/webhook` com `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted` (os outros `customer.subscription.*` também podem ficar marcados).
+`APP_URL` e `MARKETING_URL` são o domínio apex. Não use mais `membros.metodobarron.com`.
+
+Webhook live: `https://metodobarron.com/api/stripe/webhook` com `checkout.session.completed`, `customer.subscription.updated` e `customer.subscription.deleted` (os outros `customer.subscription.*` também podem ficar marcados).
 
 O que cada evento faz:
 
@@ -206,25 +208,25 @@ O que cada evento faz:
 
 Sem `STRIPE_WEBHOOK_SECRET`, o `npm run dev` continua aceitando o webhook de demonstração (`Authorization: Bearer demo-local`) e o botão **Ligar acesso de demonstração** em Conta. Em produção deixe `DEMO_MODE=false`.
 
-Não coloque a chave secreta no GitHub Pages. O marketing só conhece o link público.
+Não coloque a chave secreta em variável exposta ao browser. As páginas de marketing só conhecem o Payment Link público (`STRIPE_PAYMENT_LINK_URL`).
 
-## Publicar o app
+## Publicar o site
 
-O GitHub Pages **não** executa Next.js. O arquivo `_config.yml` na raiz pede ao Jekyll para ignorar `members/`, para o código deste app não aparecer em `metodobarron.com/members/`.
+Um deploy só. Na Vercel, o **Root Directory** do projeto é `members`. Aponte `metodobarron.com` (e `www`, se usar) para a Vercel. Desligue o GitHub Pages deste repositório para o apex não continuar servindo o HTML estático.
 
-Sugestão de host: **Vercel**, com root directory `members`, ou qualquer Node 22 com disco persistente.
+O arquivo `_config.yml` na raiz ficou só como resquício: se o Pages ainda estiver ligado por engano, o Jekyll ignora `members/`.
 
-1. DNS: `membros.metodobarron.com` → o host do app.
-2. Variáveis: `APP_URL=https://membros.metodobarron.com`, `DEMO_MODE=false`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
-3. Webhook live apontando para `https://membros.metodobarron.com/api/stripe/webhook`.
-4. Confirme o botão de `obrigado.html`. Se o subdomínio for outro, troque o `href`.
+1. DNS: `metodobarron.com` → Vercel. O subdomínio `membros.metodobarron.com` deixa de ser o app.
+2. Variáveis: `APP_URL=https://metodobarron.com`, `MARKETING_URL=https://metodobarron.com`, `DEMO_MODE=false`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
+3. Webhook live apontando para `https://metodobarron.com/api/stripe/webhook`.
+4. No Payment Link, URL de sucesso: `https://metodobarron.com/criar-conta?pago=1`. Cancelamento: `https://metodobarron.com/`.
 
 **SQLite neste scaffold não serve para a Vercel serverless**: o disco da função é efêmero e cada instância teria o seu arquivo. Para produção, use um dos caminhos abaixo antes de abrir para aluno de verdade:
 
 - VPS, Fly.io ou Railway com volume, mantendo `DATABASE_PATH` num disco que não some; ou
 - Turso (libSQL) ou Postgres (Neon, Supabase). O SQL deste app é o de partida; a troca de driver fica para o passo seguinte.
 
-Cloudflare Workers não tem `node:sqlite`. O site estático pode continuar no GitHub Pages; o app de membros precisa de runtime Node.
+Cloudflare Workers não tem `node:sqlite`. O site inteiro (marketing e membros) precisa de runtime Node, como a Vercel.
 
 Não commite `.env`, `.env.local` nem `data/`.
 
@@ -247,7 +249,8 @@ Não commite `.env`, `.env.local` nem `data/`.
 
 | Caminho | Quem vê |
 | --- | --- |
-| `/` | Porta de entrada |
+| `/` | Página de vendas |
+| `/afiliados`, `/obrigado`, `/privacidade`, `/termos` | Marketing (público). `/obrigado`, `/privacidade` e `/termos` ficam com `noindex` |
 | `/criar-conta`, `/entrar` | Público |
 | `/painel` | Início logado |
 | `/modulos`, `/modulos/[slug]` | Trilha, quiz e prática |
@@ -255,3 +258,5 @@ Não commite `.env`, `.env.local` nem `data/`.
 | `/conta` | Username, assinatura, demo |
 | `POST /api/stripe/webhook` | Stripe (ou demo) |
 | `GET /api/health` | `{ ok, demo }` sem segredos |
+
+Os endereços antigos com `.html` (`/index.html`, `/afiliados.html`, `/obrigado.html`, `/privacidade.html`, `/termos.html`) redirecionam para as rotas novas.

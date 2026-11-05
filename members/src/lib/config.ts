@@ -33,6 +33,7 @@ export const config = {
   get appUrl() {
     return httpUrl(trimmed("APP_URL"), "http://localhost:3000");
   },
+  /** Public site origin. In production this is the same host as `appUrl`. In-app “voltar ao site” links use `/`. */
   get marketingUrl() {
     return httpUrl(trimmed("MARKETING_URL"), "https://metodobarron.com");
   },
