@@ -1,0 +1,29 @@
+name: members
+
+on:
+  push:
+    paths:
+      - "members/**"
+      - ".github/workflows/members.yml"
+  pull_request:
+    paths:
+      - "members/**"
+      - ".github/workflows/members.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: members
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: members/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
