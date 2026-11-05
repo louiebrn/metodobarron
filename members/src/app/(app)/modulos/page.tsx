@@ -31,16 +31,27 @@ export default async function ModulesPage() {
           const earned = user.access ? earnedThisMonth(db, user.id, module.slug, month) : null;
           const quizDone = Boolean(row?.quiz_completed_at);
           return (
-            <Link key={module.slug} className="module-link" href={`/modulos/${module.slug}`}>
+            <Link
+              key={module.slug}
+              className={`module-link${module.central ? " is-central" : ""}${user.access ? "" : " is-locked"}`}
+              href={`/modulos/${module.slug}`}
+            >
               <span className="num mono">{String(module.number).padStart(2, "0")}</span>
               <span>
                 <strong>
-                  {module.title} {module.central ? <span className="core">★</span> : null}
+                  {module.title}
+                  {module.central ? <span className="core-tag">Central</span> : null}
                 </strong>
                 <small>{module.summary}</small>
               </span>
               {!user.access ? (
-                <span className="lock-tag">Bloqueado</span>
+                <span className="lock-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <rect x="5" y="11" width="14" height="9" rx="2" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                  Trancado
+                </span>
               ) : (
                 <span className={quizDone ? "pill pill-ok" : "pill"}>{earned?.quiz ? "Quiz do mês" : quizDone ? "Rever" : "Abrir"}</span>
               )}

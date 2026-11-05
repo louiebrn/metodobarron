@@ -19,6 +19,8 @@ export default async function RankingPage({
   const query = await searchParams;
   const flash = flashMessage(query.aviso);
   const month = monthKey();
+  const monthLabel = formatMonth(month);
+  const monthPretty = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
   const board = leaderboard(getDb(), month);
   const mine = board.find((row) => row.userId === user.id);
   const winners = board.filter((row) => row.winner);
@@ -28,27 +30,35 @@ export default async function RankingPage({
     <>
       <header className="page-head">
         <p className="kicker">
-          <span className="dot" /> Ranking · {formatMonth(month)}
+          <span className="dot" /> Ranking
         </p>
         <h1>Quem estudou mais neste mês.</h1>
-        <p>Os {GIVEAWAY_PLACES} primeiros entram no sorteio. O placar zera no dia 1º, no horário de Brasília.</p>
+        <p>
+          {monthPretty}. Os {GIVEAWAY_PLACES} primeiros entram no sorteio. O placar zera no dia 1º, no horário de
+          Brasília.
+        </p>
       </header>
 
       {flash ? <p className={flash.tone === "ok" ? "alert alert-ok" : "alert alert-warn"}>{flash.text}</p> : null}
 
-      <section className="card" style={{ marginBottom: 12 }}>
-        <h2>Sorteio do mês</h2>
+      <section className="card prize">
+        <p className="kicker">
+          <span className="dot" /> Sorteio do mês
+        </p>
+        <h2>
+          Prêmio: <span className="grad">a definir</span>
+        </h2>
         <p className="muted">
-          Prêmio: <strong>a definir</strong>. Entram os {GIVEAWAY_PLACES} primeiros com pontos. Empate: quem chegou
-          naquela pontuação antes fica na frente. Se ainda empatar, o nome em ordem alfabética decide.
+          Entram os {GIVEAWAY_PLACES} primeiros com pontos. Empate: quem chegou naquela pontuação antes fica na frente.
+          Se ainda empatar, o nome em ordem alfabética decide.
         </p>
         {mine ? (
-          <p>
+          <p className="you">
             Você está em <b>{mine.rank}º</b> com <b className="mono">{formatPoints(mine.points)}</b> pontos
             {mine.winner ? " — dentro do sorteio." : "."}
           </p>
         ) : (
-          <p className="muted">Você ainda não pontuou neste mês. Um quiz vale 10 pontos; uma prática vale 5.</p>
+          <p className="you">Você ainda não pontuou neste mês. Um quiz vale 10 pontos; uma prática vale 5.</p>
         )}
       </section>
 
@@ -56,15 +66,24 @@ export default async function RankingPage({
         <div className="podium" aria-label="Pódio">
           {(winners.length >= 3 ? [winners[1], winners[0], winners[2]] : winners).map((row) => (
             <article key={row.userId} className={`place place-${row.rank}`}>
-              <span className="dim mono">{row.rank}º</span>
+              <span className="medal" aria-hidden="true">
+                {row.rank}
+              </span>
+              <span className="medal-label">{row.rank === 1 ? "Ouro" : row.rank === 2 ? "Prata" : "Bronze"}</span>
               <b>@{row.username}</b>
-              <span className="mono">{formatPoints(row.points)} pts</span>
+              <span className="pts">{formatPoints(row.points)} pts</span>
               {row.userId === user.id ? <span className="pill pill-ok">você</span> : null}
             </article>
           ))}
         </div>
       ) : (
-        <p className="card">Ninguém pontuou ainda neste mês.</p>
+        <section className="empty">
+          <span className="medal" aria-hidden="true">
+            —
+          </span>
+          <h2>O pódio ainda está vazio.</h2>
+          <p>Faça um quiz ou registre uma prática para ser o primeiro nome do mês.</p>
+        </section>
       )}
 
       {rest.length ? (
@@ -80,7 +99,7 @@ export default async function RankingPage({
       ) : null}
 
       {isDemoMode() ? (
-        <form action={seedRivals} style={{ marginTop: 18 }}>
+        <form className="seed-form" action={seedRivals}>
           <p className="dim">Modo demonstração: coloca quatro alunos fictícios neste mês para ver o pódio.</p>
           <button className="btn btn-ghost" type="submit">
             Carregar exemplos

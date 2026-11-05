@@ -8,6 +8,15 @@ import { requireUser } from "@/lib/session";
 import { statusLabel } from "@/lib/access";
 import { formatMonth, formatPoints, monthKey } from "@/lib/time";
 
+function LockIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
 export const metadata: Metadata = { title: "Início" };
 
 export default async function DashboardPage() {
@@ -32,11 +41,14 @@ export default async function DashboardPage() {
       </header>
 
       {!user.access ? (
-        <section className="banner">
+        <section className="gate">
+          <div className="lock-seal" aria-hidden="true">
+            <LockIcon />
+          </div>
           <div>
-            <strong>Assinatura inativa</strong>
+            <h2>Assinatura inativa</h2>
             <p>
-              Os módulos ficam bloqueados até a mensalidade de R$97 estar ativa
+              Os módulos ficam trancados até a mensalidade de R$97 estar ativa
               {user.subscription ? ` (status: ${statusLabel(user.subscription.status).toLowerCase()})` : ""}. Use o
               mesmo e-mail desta conta no checkout.
             </p>
@@ -55,7 +67,7 @@ export default async function DashboardPage() {
       ) : null}
 
       <section className="grid stats">
-        <article className="card stat">
+        <article className="card stat stat-points">
           <span>Pontos no mês</span>
           <b className="mono">{formatPoints(score?.points ?? 0)}</b>
         </article>
@@ -67,18 +79,29 @@ export default async function DashboardPage() {
           <span>Quizzes feitos</span>
           <b className="mono">
             {done.size}
-            <span style={{ fontSize: "1rem", color: "var(--muted)" }}> / {MODULES.length}</span>
+            <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}> / {MODULES.length}</span>
           </b>
         </article>
       </section>
 
-      <section className="card" style={{ marginTop: 12 }}>
-        <h2>{user.access ? "Continuar" : "Próximo módulo"}</h2>
-        <p className="muted">
-          Módulo {next.number} · {next.title}
+      <section className="feature">
+        <p className="kicker">
+          <span className="dot" /> {user.access ? "Continuar" : "Próximo módulo"}
         </p>
-        <p className="dim">{next.summary}</p>
-        <div className="row-actions" style={{ marginTop: 12 }}>
+        <h2>
+          Módulo {next.number} · {next.title}
+        </h2>
+        <p>{next.summary}</p>
+        <div className="bar" aria-hidden="true">
+          <i style={{ width: `${Math.round((done.size / MODULES.length) * 100)}%` }} />
+        </div>
+        <div className="meta">
+          <span>
+            {done.size} de {MODULES.length} quizzes
+          </span>
+          <span>{user.access ? "Liberado" : "Trancado"}</span>
+        </div>
+        <div className="row-actions" style={{ marginTop: 16 }}>
           <Link className="btn btn-primary" href={`/modulos/${next.slug}`}>
             {user.access ? "Abrir módulo" : "Ver módulo"}
           </Link>

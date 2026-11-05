@@ -52,31 +52,50 @@ export default async function ModulePage({
       ) : null}
 
       {!user.access ? (
-        <section className="banner">
-          <div>
-            <strong>Módulo bloqueado</strong>
-            <p>
-              A aula, o quiz e a prática abrem enquanto a assinatura mensal estiver ativa. O checkout usa o e-mail
-              desta conta para liberar o acesso.
-            </p>
-          </div>
-          <a className="btn btn-primary" href={checkoutUrl(user)}>
-            Assinar por R$97/mês
-          </a>
-        </section>
+        <div className="stack">
+          <section className="gate">
+            <div className="lock-seal" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <rect x="5" y="11" width="14" height="9" rx="2" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+            </div>
+            <div>
+              <h2>Este módulo abre com a assinatura.</h2>
+              <p>
+                A aula, o quiz e a prática ficam disponíveis enquanto a mensalidade estiver ativa. O checkout usa o
+                e-mail desta conta.
+              </p>
+            </div>
+            <a className="btn btn-primary" href={checkoutUrl(user)}>
+              Assinar por R$97/mês
+            </a>
+          </section>
+          <section className="card">
+            <h2>O que tem aqui</h2>
+            <p className="lesson-note">A trilha já está montada. O conteúdo abre junto com a assinatura.</p>
+            <ul className="lessons">
+              {module.lessons.map((lesson) => (
+                <li key={lesson}>{lesson}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
       ) : (
         <div className="stack">
           <section className="card">
             <h2>Aulas</h2>
             <p className="lesson-note">Os vídeos entram aqui. Por enquanto, o roteiro de cada aula:</p>
-            <ol className="lessons">
+            <ul className="lessons">
               {module.lessons.map((lesson) => (
                 <li key={lesson}>
-                  {lesson}
-                  <div className="dim">Vídeo em breve</div>
+                  <span>
+                    {lesson}
+                    <div className="dim">Vídeo em breve</div>
+                  </span>
                 </li>
               ))}
-            </ol>
+            </ul>
           </section>
 
           <section className="card">
@@ -87,7 +106,7 @@ export default async function ModulePage({
             ) : (
               <form action={submitQuiz}>
                 <input type="hidden" name="slug" value={module.slug} />
-                <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+                <fieldset>
                   <legend>{module.quiz.question}</legend>
                   <div className="options">
                     {module.quiz.options.map((option, optionIndex) => (
