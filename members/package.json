@@ -2,13 +2,14 @@
   "name": "metodo-barron-members",
   "version": "0.1.0",
   "private": true,
-  "description": "Área de membros do Método Barron (scaffold).",
+  "description": "Método Barron: site de marketing e área de membros num único app Next.js.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/*.ts"
+    "test": "tsx --test test/*.ts",
+    "extract:marketing": "node scripts/extract-marketing-home.mjs"
   },
   "dependencies": {
     "next": "^15.5.6",

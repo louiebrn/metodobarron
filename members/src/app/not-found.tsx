@@ -1,18 +1,24 @@
-import { Logo } from "@/components/logo";
-import { config } from "@/lib/config";
+import type { Metadata } from "next";
+import "@/components/marketing/docs.css";
+
+export const metadata: Metadata = {
+  title: { absolute: "Página Não Encontrada — Método Barron" },
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (
-    <div className="auth">
-      <div className="auth-card">
-        <Logo href={config.marketingUrl} />
-        <h1 style={{ marginTop: 18 }}>Página não encontrada.</h1>
-        <p className="lede">Esse endereço não existe na área de membros.</p>
-        <div className="row-actions" style={{ marginTop: 18 }}>
-          <a className="btn btn-primary" href="/painel">
-            Ir para o início
-          </a>
+    <div className="mdoc-404">
+      <div>
+        <div className="brand-mark">
+          <span>B</span>
         </div>
+        <div className="code">404</div>
+        <h1>Essa página não existe (ainda).</h1>
+        <p>O link pode estar quebrado ou a página pode ter mudado de endereço. Vamos te levar de volta.</p>
+        <a href="/" className="btn">
+          Voltar ao Início
+        </a>
       </div>
     </div>
   );

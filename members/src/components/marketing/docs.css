@@ -1,0 +1,250 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap");
+
+.mdoc {
+  --bg: #0a0a09;
+  --surface: #141412;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-red: rgba(230, 57, 70, 0.4);
+  --red: #e63946;
+  --red-light: #f2545a;
+  --red-dark: #a4222b;
+  --green: #17d97e;
+  --text: #f5f4ef;
+  --text-muted: #9a9c92;
+  --text-dim: #68695f;
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.mdoc *,
+.mdoc-404,
+.mdoc-404 * { box-sizing: border-box; }
+.mdoc * { margin: 0; padding: 0; }
+.mdoc a { color: var(--red-light); text-decoration: underline; text-underline-offset: 2px; }
+.mdoc .brand,
+.mdoc .btn { text-decoration: none; }
+.mdoc .container { max-width: 760px; margin: 0 auto; padding: 0 28px; width: 100%; }
+.mdoc-thanks .container { max-width: 600px; }
+.mdoc header { padding: 24px 0; border-bottom: 1px solid var(--border); }
+.mdoc .brand { display: flex; align-items: center; gap: 11px; }
+.mdoc .brand-mark { width: 32px; height: 32px; flex-shrink: 0; display: block; }
+.mdoc .brand-mark-clip {
+  width: 32px;
+  height: 36px;
+  background: linear-gradient(155deg, var(--red-light), var(--red-dark));
+  clip-path: polygon(50% 0%, 100% 16%, 100% 62%, 50% 100%, 0% 62%, 0% 16%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mdoc .brand-mark-clip span {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: #fff;
+  font-size: 14px;
+  margin-top: -2px;
+}
+.mdoc .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 15.5px; color: var(--text); }
+.mdoc main { flex: 1; padding: 56px 0 90px; }
+.mdoc-thanks main { padding: 70px 0; text-align: center; }
+.mdoc .eyebrow {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.mdoc .eyebrow::before { content: ""; width: 20px; height: 2px; background: var(--red); border-radius: 2px; }
+.mdoc h1 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 800;
+  letter-spacing: normal;
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+.mdoc .eyebrow + h1 { font-size: clamp(30px, 4.4vw, 42px); margin: 16px 0 18px; }
+.mdoc-thanks h1 { font-size: clamp(28px, 4.4vw, 38px); margin-bottom: 14px; }
+.mdoc h2 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: normal; line-height: 1.3; margin: 36px 0 12px; }
+.mdoc h3 { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; letter-spacing: normal; line-height: 1.3; margin: 20px 0 8px; }
+.mdoc .lead { color: var(--text-muted); font-size: 17px; line-height: 1.75; margin-bottom: 44px; max-width: 620px; }
+.mdoc-thanks .lead { font-size: 16.5px; margin-bottom: 44px; max-width: 460px; margin-left: auto; margin-right: auto; }
+.mdoc p { color: var(--text-muted); font-size: 15px; margin-bottom: 12px; }
+.mdoc li { color: var(--text-muted); font-size: 15px; margin-bottom: 8px; margin-left: 22px; }
+.mdoc .updated { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; }
+.mdoc .notice {
+  background: var(--surface);
+  border: 1px solid var(--border-red);
+  border-radius: 14px;
+  padding: 18px 22px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 44px;
+}
+.mdoc .notice strong { color: var(--text); }
+.mdoc .placeholder { color: var(--red-light); }
+.mdoc table { width: 100%; border-collapse: collapse; margin: 16px 0 20px; font-size: 14px; }
+.mdoc th,
+.mdoc td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+.mdoc th {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mdoc .commission-card {
+  background: var(--surface);
+  border: 1px solid var(--border-red);
+  border-radius: 16px;
+  padding: 30px 32px;
+  margin: 20px 0 8px;
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.mdoc .commission-item strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--red-light);
+}
+.mdoc .commission-item span { font-size: 13px; color: var(--text-muted); }
+.mdoc .cta-block {
+  text-align: center;
+  margin: 52px 0 20px;
+  padding: 40px 30px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.mdoc .cta-block p { max-width: 440px; margin: 0 auto 22px; }
+.mdoc .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 15px 30px;
+  font-weight: 700;
+  font-size: 15px;
+  border: 0;
+  border-radius: 100px;
+  background: linear-gradient(100deg, var(--red-light), var(--red));
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 10px 26px -8px rgba(230, 57, 70, 0.5);
+  cursor: pointer;
+}
+.mdoc .check {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  background: rgba(23, 217, 126, 0.12);
+  border: 1px solid rgba(23, 217, 126, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mdoc .check svg { width: 32px; height: 32px; stroke: var(--green); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.mdoc .steps {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 30px 32px;
+  margin-bottom: 32px;
+}
+.mdoc .step { display: flex; gap: 16px; padding: 14px 0; border-top: 1px solid var(--border); }
+.mdoc .step:first-child { border-top: none; padding-top: 0; }
+.mdoc .step:last-child { padding-bottom: 0; }
+.mdoc .step-num { font-family: var(--font-display); font-weight: 800; color: var(--red-light); font-size: 15px; flex-shrink: 0; width: 22px; }
+.mdoc .step p { color: var(--text-muted); font-size: 14.5px; margin: 0; }
+.mdoc .step strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 15px; }
+.mdoc .support { margin-top: 36px; font-size: 13.5px; color: var(--text-dim); }
+.mdoc .support a { color: var(--red-light); }
+.mdoc footer { border-top: 1px solid var(--border); padding: 26px 0; text-align: center; font-size: 13px; color: var(--text-dim); }
+.mdoc footer a { color: var(--text-dim); }
+
+.mdoc-404 {
+  --red: #e63946;
+  --red-light: #f2545a;
+  --red-dark: #a4222b;
+  --text: #f5f4ef;
+  --text-muted: #9a9c92;
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  background: #0a0a09;
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px;
+}
+.mdoc-404 .brand-mark {
+  width: 44px;
+  height: 50px;
+  margin: 0 auto 28px;
+  background: linear-gradient(155deg, var(--red-light), var(--red-dark));
+  clip-path: polygon(50% 0%, 100% 16%, 100% 62%, 50% 100%, 0% 62%, 0% 16%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mdoc-404 .brand-mark span {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: #fff;
+  font-size: 19px;
+  margin-top: -2px;
+}
+.mdoc-404 .code {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(64px, 14vw, 120px);
+  line-height: 1;
+  background: linear-gradient(100deg, var(--red-light), var(--red) 60%, var(--red-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mdoc-404 h1 {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.2;
+  margin: 14px 0 12px;
+}
+.mdoc-404 p { color: var(--text-muted); font-size: 15px; max-width: 400px; margin: 0 auto 30px; line-height: 1.7; }
+.mdoc-404 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 0;
+  padding: 14px 26px;
+  font-weight: 700;
+  font-size: 14.5px;
+  border: 0;
+  border-radius: 100px;
+  background: linear-gradient(100deg, var(--red-light), var(--red));
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 10px 26px -8px rgba(230, 57, 70, 0.5);
+}

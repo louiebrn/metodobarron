@@ -1,5 +1,4 @@
 import { logout } from "@/actions/auth";
-import { config } from "@/lib/config";
 import { formatPoints } from "@/lib/time";
 import { Logo } from "./logo";
 import { Nav } from "./nav";
@@ -33,7 +32,7 @@ export function Shell({
         {children}
         <p className="footer-note">
           Conteúdo educacional. Não é recomendação de investimento.{" "}
-          <a href={config.marketingUrl}>Voltar ao site</a>
+          <a href="/">Voltar ao site</a>
         </p>
       </main>
       <Nav variant="tab" />

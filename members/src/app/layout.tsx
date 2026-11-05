@@ -1,27 +1,51 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const siteUrl = "https://metodobarron.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Área de membros · Método Barron",
+    default: "Método Barron | Day trade nos futuros NQ e ES com método, do simulador ao plano de 30 dias",
     template: "%s · Método Barron",
   },
-  description: "Área de membros do Método Barron. Módulos, prática e ranking mensal.",
-  robots: { index: false, follow: false },
+  description:
+    "Método Barron: day trade nos futuros NQ e ES com método, do simulador ao plano de 30 dias. Conteúdo educacional, sem promessas milagrosas.",
+  applicationName: "Método Barron",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Método Barron",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        type: "image/png",
+        alt: "Método Barron — prática, risco e disciplina.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b0c0f",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body>
-        <div className="aurora" aria-hidden="true">
-          <span className="b b1" />
-          <span className="b b2" />
-          <span className="b b3" />
-        </div>
-        <div className="grain" aria-hidden="true" />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
