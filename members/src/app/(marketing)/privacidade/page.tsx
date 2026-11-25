@@ -4,7 +4,7 @@ import { DocPage } from "@/components/marketing/doc-page";
 
 export const metadata: Metadata = {
   title: { absolute: "Política de Privacidade — Método Barron" },
-  description: "Como o Método Barron trata nome, e-mail e WhatsApp, em conformidade com a LGPD.",
+  description: "Como o Método Barron trata o quiz, nome, e-mail, WhatsApp ou Telegram, em conformidade com a LGPD.",
   robots: { index: false, follow: false },
   alternates: { canonical: "/privacidade" },
 };
@@ -26,8 +26,9 @@ export default function PrivacidadePage() {
         canal para pedidos da LGPD: <a href="mailto:mtdbarron@proton.me">mtdbarron@proton.me</a>.
       </p>
       <p>
-        O site oferece um curso educacional de day trade nos futuros NQ e ES, uma área de membros e um material grátis
-        (planilha de diário de trades e checklist pré-mercado).
+        O site oferece um quiz curto para maiores de 18 anos, um curso educacional de day trade nos futuros NQ e ES e uma
+        área de membros. O quiz indica um link de afiliado da corretora Axi e o grupo da tropa no Telegram. Não é
+        recomendação de investimento.
       </p>
 
       <h2>2. Dados que coletamos</h2>
@@ -38,8 +39,12 @@ export default function PrivacidadePage() {
             <th>Dados</th>
           </tr>
           <tr>
-            <td>Material grátis</td>
-            <td>Nome (opcional), e-mail ou WhatsApp com DDD, página de origem e data do envio</td>
+            <td>Quiz da home</td>
+            <td>
+              Faixa de idade, quanto pretende investir, experiência, objetivo, tempo por dia, se já tem conta em
+              corretora, nome, e-mail, WhatsApp ou usuário do Telegram, data do envio, página, origem (referrer) e
+              parâmetros utm. Quem marca “Menos de 18” não envia nada: essa resposta não é salva.
+            </td>
           </tr>
           <tr>
             <td>Conta de membro</td>
@@ -65,7 +70,7 @@ export default function PrivacidadePage() {
 
       <h2>3. Para que usamos</h2>
       <ul>
-        <li>Entregar o material grátis e avisar a tropa sobre esse material, sem spam;</li>
+        <li>Mostrar o caminho depois do quiz e falar com você sobre esse próximo passo, sem spam;</li>
         <li>Criar a conta, liberar os 8 módulos e operar o ranking;</li>
         <li>Cobrar a assinatura, aplicar a garantia de 7 dias e o cancelamento;</li>
         <li>Medir o uso do site e, só com o seu aceite, campanhas da Meta e do TikTok;</li>
@@ -74,9 +79,9 @@ export default function PrivacidadePage() {
 
       <h2>4. Base legal</h2>
       <p>
-        Execução de contrato e de procedimentos preliminares, para conta, curso e material pedido. Consentimento, para
-        pixels de anúncio e para mensagens que não sejam necessárias à conta. Legítimo interesse, para segurança e para
-        a medição agregada do site. Obrigação legal, quando a lei exigir guarda de registro.
+        Consentimento, para guardar as respostas do quiz e o contato, e para pixels de anúncio. Execução de contrato e
+        de procedimentos preliminares, para conta e curso. Legítimo interesse, para segurança e para a medição agregada
+        do site. Obrigação legal, quando a lei exigir guarda de registro.
       </p>
 
       <h2>5. Com quem compartilhamos</h2>
@@ -86,7 +91,14 @@ export default function PrivacidadePage() {
         <li>Stripe, pagamento e portal de assinatura;</li>
         <li>Meta e TikTok, somente se você aceitar o banner de cookies e os pixels estiverem configurados;</li>
         <li>Telegram, só se você mesmo entrar na Tropa do Barron pelo link;</li>
-        <li>Um endpoint que você configurar para receber os contatos do material grátis, se houver.</li>
+        <li>
+          Axi e a rede de afiliados, só se você clicar em “Abrir conta na Axi”. O clique sai do nosso site. Não
+          enviamos as respostas do quiz para a corretora.
+        </li>
+        <li>
+          A planilha ou o endpoint que o Método Barron configurar para receber o quiz (nome, contato, respostas, data e
+          origem). Esse destino não é a Axi.
+        </li>
       </ul>
       <p>
         Alguns desses operadores podem tratar dados fora do Brasil. Nesses casos, buscamos contratos e medidas
@@ -104,15 +116,18 @@ export default function PrivacidadePage() {
       <h2>7. Por quanto tempo</h2>
       <p>
         Conta, progresso e assinatura ficam enquanto a conta existir e pelo prazo em que a lei exigir a guarda. O
-        contato do material grátis fica enquanto for útil para esse envio e para a prova do consentimento, e pode ser
-        apagado quando você pedir, salvo dever legal de retenção.
+        contato e as respostas do quiz ficam enquanto forem úteis para esse envio e para a prova do consentimento, e podem
+        ser apagados quando você pedir, salvo dever legal de retenção.
       </p>
 
       <h2>8. Seus direitos</h2>
       <p>Você pode pedir confirmação, acesso, correção, anonimização, bloqueio, eliminação, portabilidade e informação sobre compartilhamentos. Pode revogar o consentimento quando ele for a base do tratamento. Para isso, escreva para <a href="mailto:mtdbarron@proton.me">mtdbarron@proton.me</a>. Também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).</p>
 
       <h2>9. Crianças e adolescentes</h2>
-      <p>O curso é dirigido a maiores de 18 anos. Não coletamos dados de crianças de propósito.</p>
+      <p>
+        O quiz e o curso são para maiores de 18 anos. A opção “Menos de 18” encerra o fluxo e não grava dado. Não
+        coletamos dados de crianças de propósito.
+      </p>
 
       <h2>10. Segurança</h2>
       <p>

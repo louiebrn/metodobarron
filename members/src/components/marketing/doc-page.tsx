@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { config } from "@/lib/config";
 import { MarketingChrome } from "./marketing-chrome";
 import "./home.css";
 import "./docs.css";
@@ -14,7 +13,7 @@ export function DocPage({
   footer?: ReactNode;
 }) {
   return (
-    <MarketingChrome checkoutUrl={config.paymentLinkUrl}>
+    <MarketingChrome>
       <main className={thanks ? "doc doc-thanks" : "doc"}>
         <div className="wrap">{children}</div>
       </main>

@@ -2,7 +2,7 @@ export const CONSENT_STORAGE_KEY = "mb-lgpd";
 
 export type ConsentChoice = "accepted" | "rejected";
 
-export type MarketingEvent = "PageView" | "Lead" | "InitiateCheckout" | "Purchase";
+export type MarketingEvent = "PageView" | "Lead" | "CompleteRegistration" | "InitiateCheckout" | "Purchase";
 
 /** Public launch price. Pixels send it with checkout and purchase. */
 export const LAUNCH_PRICE_BRL = 97;
@@ -38,9 +38,12 @@ export function hasMarketingPixels(env?: PixelEnv): boolean {
  * TikTok has no event named Purchase or Lead.
  * Lead → SubmitForm. Purchase → CompletePayment. InitiateCheckout keeps the same name.
  */
-export function tiktokEventName(event: MarketingEvent): "page" | "SubmitForm" | "InitiateCheckout" | "CompletePayment" {
+export function tiktokEventName(
+  event: MarketingEvent,
+): "page" | "SubmitForm" | "CompleteRegistration" | "InitiateCheckout" | "CompletePayment" {
   if (event === "PageView") return "page";
   if (event === "Lead") return "SubmitForm";
+  if (event === "CompleteRegistration") return "CompleteRegistration";
   if (event === "InitiateCheckout") return "InitiateCheckout";
   return "CompletePayment";
 }

@@ -12,6 +12,7 @@ test("pixels stay off until the public ids are set", () => {
 test("tiktok purchase and lead use the platform event names", () => {
   assert.equal(tiktokEventName("PageView"), "page");
   assert.equal(tiktokEventName("Lead"), "SubmitForm");
+  assert.equal(tiktokEventName("CompleteRegistration"), "CompleteRegistration");
   assert.equal(tiktokEventName("InitiateCheckout"), "InitiateCheckout");
   assert.equal(tiktokEventName("Purchase"), "CompletePayment");
 });

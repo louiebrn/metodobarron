@@ -118,6 +118,14 @@ CREATE TABLE IF NOT EXISTS leads (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS leads_contact ON leads(contact);
+
+CREATE TABLE IF NOT EXISTS quiz_leads (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS quiz_leads_email ON quiz_leads(email);
 `;
 
 export type Sql = string | number | bigint | null | Uint8Array;
