@@ -21,6 +21,9 @@ test("marketing homepage keeps the sales copy and same-origin links", () => {
   assert.match(homeBodyHtml, /data-results="off"/);
   assert.match(homeBodyHtml, /data-launch-at="2026-11-30T12:00:00-03:00"/);
   assert.match(homeBodyHtml, /Quero o material grátis/);
+  assert.match(homeBodyHtml, /href="\/termos"/);
+  assert.match(homeBodyHtml, /href="\/privacidade"/);
+  assert.match(homeBodyHtml, /Ao enviar, você concorda/);
   const homeJs = readFileSync(new URL("../public/marketing/home.js", import.meta.url), "utf8");
   assert.match(homeJs, /\/api\/leads/);
   assert.doesNotMatch(homeJs, /WAITLIST-SETUP/);

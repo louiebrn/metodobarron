@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { ConsentBanner } from "@/components/consent-banner";
 import "./globals.css";
 
 const siteUrl = "https://metodobarron.com";
@@ -45,7 +47,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ConsentBanner />
+        <Analytics />
+      </body>
     </html>
   );
 }

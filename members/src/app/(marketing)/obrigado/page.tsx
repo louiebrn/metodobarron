@@ -33,33 +33,33 @@ export default function ObrigadoPage() {
         <div className="step">
           <span className="step-num">01</span>
           <p>
-            <strong>Crie sua conta de membro</strong>
-            Use o mesmo e-mail da compra na Stripe. Escolha uma senha e um nome de usuário para o ranking. A senha não é
-            enviada por e-mail.
+            <strong>Confira o e-mail da compra</strong>
+            A Stripe envia o recibo para o e-mail usado no pagamento. A senha da área de membros não vai nesse e-mail.
           </p>
         </div>
         <div className="step">
           <span className="step-num">02</span>
           <p>
-            <strong>Acesse os módulos</strong>
-            Com a assinatura ativa, os 8 módulos liberam. Quizzes e práticas somam pontos no ranking do mês.
+            <strong>Entre na área de membros</strong>
+            Crie a conta com o mesmo e-mail da Stripe, ou entre se ela já existir. Com a assinatura ativa, os 8 módulos
+            liberam.
           </p>
         </div>
         <div className="step">
           <span className="step-num">03</span>
           <p>
-            <strong>Entre no Telegram</strong>
-            Tire dúvidas no grupo enquanto pratica no simulador.
+            <strong>Entre na Tropa do Barron</strong>
+            O grupo no Telegram é o lugar para acompanhar a tropa enquanto você pratica no simulador.
           </p>
         </div>
       </div>
 
       <a href="/criar-conta?pago=1" className="btn">
-        Criar minha conta
+        Acessar a área de membros
       </a>
       <p style={{ marginTop: 20 }}>
         <a href="https://t.me/+Mj-tOeCA_whhYmU0" target="_blank" rel="noopener" style={{ fontSize: 14 }}>
-          Entrar no grupo do Telegram →
+          Entre na Tropa do Barron →
         </a>
       </p>
       <p className="support">

@@ -507,6 +507,7 @@
 .mkt .wlf .btn .spin{display:none;width:18px;height:18px;border-radius:50%;border:2px solid rgba(46,230,200,.3);border-top-color:#2ee6c8;animation:spin .8s linear infinite}
 .mkt .wlf .btn.busy .spin{display:block}.mkt .wlf .btn.busy svg{display:none}
 .mkt .priv{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:var(--dim);text-align:center}
+.mkt .priv a{color:var(--teal);text-decoration:underline;text-underline-offset:3px}
 .mkt .wlok{display:grid;justify-items:center;text-align:center;gap:14px;padding:12px 0}
 .mkt .wlok[hidden],.mkt .wlf[hidden]{display:none!important}
 .mkt .wlok .okic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(126,231,135,.25),rgba(46,230,200,.08));border:1px solid rgba(126,231,135,.5);color:#7ee787;box-shadow:0 0 40px -6px rgba(126,231,135,.5)}

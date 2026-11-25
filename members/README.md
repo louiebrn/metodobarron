@@ -63,6 +63,8 @@ Copie `.env.example` para `.env.local` só se for mudar algum padrão.
 | `INSTAGRAM_USER_ID` | Junto com o token | Id numérico da conta profissional do Instagram. |
 | `INSTAGRAM_GRAPH_VERSION` | Não | Versão da Graph API. Padrão `v21.0`. |
 | `INSTAGRAM_SESSIONID` | Não | Alternativa ao token: cookie `sessionid` de uma sessão logada. Só no servidor. |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Não | ID do Meta Pixel. Vazio = o script não carrega. Só dispara depois de Aceitar no banner. |
+| `NEXT_PUBLIC_TIKTOK_PIXEL_ID` | Não | ID do pixel do TikTok. Mesma regra do Meta. |
 
 ## Seguidores ao vivo
 
@@ -76,6 +78,21 @@ Os números do Instagram (@mtdbarron) e do TikTok (@mtdbarron) saem de `members/
 - `npm run followers:update` faz a mesma busca na sua máquina.
 
 Segredos opcionais do workflow: `FOLLOWERS_PUSH_TOKEN` (PAT com permissão de escrita, se a Vercel ignorar o push do `GITHUB_TOKEN`).
+
+## Medição e pixels
+
+O layout raiz inclui o Vercel Web Analytics (`@vercel/analytics`). Ele mede visitas de forma agregada e não depende de cookie de anúncio.
+
+Meta e TikTok só entram se `NEXT_PUBLIC_META_PIXEL_ID` e/ou `NEXT_PUBLIC_TIKTOK_PIXEL_ID` estiverem preenchidos **e** a pessoa clicar em Aceitar no banner da LGPD. Recusar não carrega esses scripts.
+
+Eventos, quando o pixel existe e o aceite está gravado:
+
+| Momento | Meta | TikTok |
+| --- | --- | --- |
+| Cada página | PageView | `page` |
+| Material grátis enviado | Lead | SubmitForm |
+| Clique em comprar | InitiateCheckout (R$97) | InitiateCheckout |
+| Página `/obrigado` | Purchase (R$97) | CompletePayment |
 
 ## Material grátis
 
