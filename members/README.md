@@ -58,6 +58,28 @@ Copie `.env.example` para `.env.local` só se for mudar algum padrão.
 | `STRIPE_SECRET_KEY` | Sim, para o portal criado pelo app | Chave secreta **live**. Nunca commitar. |
 | `STRIPE_WEBHOOK_SECRET` | Sim, em produção | Segredo do endpoint (`whsec_...`). |
 | `STRIPE_CUSTOMER_PORTAL_LOGIN_URL` | Alternativa à chave secreta | Link de login do portal, se você não quiser que o app chame a API. |
+| `LEADS_WEBHOOK_URL` | Não no `npm run dev` | URL que recebe POST JSON do material grátis. Obrigatória na Vercel para o contato não se perder (o SQLite do disco da função some). |
+| `INSTAGRAM_GRAPH_TOKEN` | Não | Token da Graph API para a contagem de seguidores do Instagram. Sem ele, o site repete o último número salvo. |
+| `INSTAGRAM_USER_ID` | Junto com o token | Id numérico da conta profissional do Instagram. |
+| `INSTAGRAM_GRAPH_VERSION` | Não | Versão da Graph API. Padrão `v21.0`. |
+| `INSTAGRAM_SESSIONID` | Não | Alternativa ao token: cookie `sessionid` de uma sessão logada. Só no servidor. |
+
+## Seguidores ao vivo
+
+Os números do Instagram (@mtdbarron) e do TikTok (@mtdbarron) saem de `members/src/lib/followers.json`. A página e os metas (`54 mil`, total, barra do TikTok) leem esse arquivo. O fluxo `.github/workflows/followers.yml` roda a cada 6 horas, busca de novo e, se o número mudou, grava o JSON e faz push. A Vercel republica no push.
+
+- TikTok: a página pública `@mtdbarron`, sem chave. Dá para falhar (bloqueio, HTML diferente). Aí o JSON não muda.
+- Instagram: a página pública costuma exigir login. Para atualizar de verdade, crie um secret no GitHub **e** a mesma variável na Vercel:
+  - preferível: `INSTAGRAM_GRAPH_TOKEN` + `INSTAGRAM_USER_ID` (conta profissional / Graph API);
+  - ou `INSTAGRAM_SESSIONID` (cookie `sessionid`, não commitar).
+- Um número absurdo (queda pela metade ou salto de 3×) é descartado. O último valor válido fica na tela.
+- `npm run followers:update` faz a mesma busca na sua máquina.
+
+Segredos opcionais do workflow: `FOLLOWERS_PUSH_TOKEN` (PAT com permissão de escrita, se a Vercel ignorar o push do `GITHUB_TOKEN`).
+
+## Material grátis
+
+O formulário da home (`POST /api/leads`) troca e-mail ou WhatsApp pela planilha e pelo checklist em `/materiais/`. No `npm run dev` o contato vai para o SQLite. Na Vercel esse arquivo não dura: configure `LEADS_WEBHOOK_URL` com um endpoint que aceite JSON `{ name, contactType, contact, page, createdAt, source, offer }`. Sem o webhook e sem disco persistente, o formulário avisa que não guardou o contato e não finge sucesso.
 
 `DEMO_MODE=false` sem as chaves da Stripe: a interface continua no ar, mas os módulos só abrem quando um webhook de verdade marcar a assinatura como ativa.
 
