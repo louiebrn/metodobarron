@@ -9,16 +9,7 @@ export const metadata: Metadata = {
 
 export default function ObrigadoPage() {
   return (
-    <DocPage
-      variant="svg"
-      thanks
-      footer={
-        <>
-          {" "}
-          · <a href="/termos">Termos de Uso</a> · <a href="/privacidade">Política de Privacidade</a>
-        </>
-      }
-    >
+    <DocPage thanks>
       <div className="check">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 12l5 5L20 6" />
@@ -29,15 +20,15 @@ export default function ObrigadoPage() {
         Seja bem-vindo(a) ao Método Barron. Sua assinatura foi ativada com sucesso — falta pouco para você começar.
       </p>
 
-      <div className="steps">
-        <div className="step">
+      <div className="doc-steps">
+        <div className="doc-step">
           <span className="step-num">01</span>
           <p>
             <strong>Confira o e-mail da compra</strong>
             A Stripe envia o recibo para o e-mail usado no pagamento. A senha da área de membros não vai nesse e-mail.
           </p>
         </div>
-        <div className="step">
+        <div className="doc-step">
           <span className="step-num">02</span>
           <p>
             <strong>Entre na área de membros</strong>
@@ -45,7 +36,7 @@ export default function ObrigadoPage() {
             liberam.
           </p>
         </div>
-        <div className="step">
+        <div className="doc-step">
           <span className="step-num">03</span>
           <p>
             <strong>Entre na Tropa do Barron</strong>
@@ -54,14 +45,24 @@ export default function ObrigadoPage() {
         </div>
       </div>
 
-      <a href="/criar-conta?pago=1" className="btn">
-        Acessar a área de membros
-      </a>
-      <p style={{ marginTop: 20 }}>
-        <a href="https://t.me/+Mj-tOeCA_whhYmU0" target="_blank" rel="noopener" style={{ fontSize: 14 }}>
-          Entre na Tropa do Barron →
+      <div className="doc-actions">
+        <a href="/criar-conta?pago=1" className="btn">
+          <span>Acessar a área de membros</span>
+          <span className="ar" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
         </a>
-      </p>
+        <a href="https://t.me/+Mj-tOeCA_whhYmU0" className="btn line" target="_blank" rel="noopener">
+          <span>Entre na Tropa do Barron</span>
+          <span className="ar" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </a>
+      </div>
       <p className="support">
         Alguma dúvida? Fale com a gente pelo{" "}
         <a href="https://wa.me/5511910868069" target="_blank" rel="noopener">

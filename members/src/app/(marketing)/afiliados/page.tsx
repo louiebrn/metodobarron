@@ -10,15 +10,7 @@ export const metadata: Metadata = {
 
 export default function AfiliadosPage() {
   return (
-    <DocPage
-      variant="svg"
-      footer={
-        <>
-          {" "}
-          · <a href="/termos">Termos de Uso</a> · <a href="/privacidade">Política de Privacidade</a>
-        </>
-      }
-    >
+    <DocPage>
       <span className="eyebrow">Programa de Afiliados</span>
       <h1>Ganhe promovendo o Método Barron.</h1>
       <p className="lead">

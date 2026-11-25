@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function TermosPage() {
   return (
-    <DocPage footer={<> · <a href="/privacidade">Política de Privacidade</a></>}>
+    <DocPage>
       <h1>Termos de Uso</h1>
       <p className="updated">Última atualização: 25 de novembro de 2026</p>
 
