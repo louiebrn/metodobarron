@@ -18,10 +18,11 @@ const PROOF = [
 ] as const;
 
 const LIFE = [
-  { src: "/lifestyle/barron-1.webp", alt: "Relógio e corrente. Foto da tropa, não é resultado de operação.", width: 900, height: 1600 },
-  { src: "/lifestyle/barron-2.webp", alt: "Interior de um carro, com outro carro do lado de fora.", width: 900, height: 1600 },
-  { src: "/lifestyle/barron-3.webp", alt: "Relógio no pulso ao lado de um prato.", width: 900, height: 1600 },
-  { src: "/lifestyle/barron-4.webp", alt: "Casa e piscina à noite.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-1.webp", alt: "Dois carros num terraço. Foto da tropa, não é resultado de operação.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-2.webp", alt: "Relógio e corrente. Foto da tropa, não é resultado de operação.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-3.webp", alt: "Interior de um carro, com outro carro do lado de fora.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-4.webp", alt: "Relógio no pulso ao lado de um prato.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-5.webp", alt: "Casa e piscina à noite.", width: 900, height: 1600 },
 ] as const;
 
 const NUDGE = [

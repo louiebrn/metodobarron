@@ -13,6 +13,8 @@ test("home is a short quiz funnel without the old sales page", () => {
   assert.match(funnel, /30k\+/);
   assert.match(funnel, /1k\+/);
   assert.match(funnel, /O estilo de vida da tropa/);
+  assert.match(funnel, /barron-1\.webp/);
+  assert.match(funnel, /barron-5\.webp/);
   assert.doesNotMatch(funnel, /CountUp|cerca de|soma/);
   assert.match(funnel, /Entrar na Tropa do Barron/);
   assert.match(funnel, /Não é recomendação de investimento/);
