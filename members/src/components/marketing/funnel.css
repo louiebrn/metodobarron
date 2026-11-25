@@ -32,13 +32,11 @@
 }
 @keyframes grid-drift { to { background-position: 56px 56px; } }
 .funnel-candles {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 120px;
-  height: 160px;
+  position: relative;
+  height: 72px;
+  margin: 8px 0 0;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.55;
   overflow: hidden;
 }
 .funnel-candles svg { width: 200%; height: 100%; animation: tape 18s linear infinite; }

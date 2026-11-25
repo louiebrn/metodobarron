@@ -217,9 +217,6 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
   return (
     <div className="funnel">
       <div className="funnel-grid" aria-hidden="true" />
-      <div className="funnel-candles" aria-hidden="true">
-        <Candles />
-      </div>
       <header className="funnel-top">
         <Logo href="/" />
         <a className="funnel-login" href="/entrar">
@@ -249,6 +246,9 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
                 </span>
               </button>
               <p className="funnel-note">Só para maiores de 18. Conteúdo educacional.</p>
+              <div className="funnel-candles" aria-hidden="true">
+                <Candles />
+              </div>
             </section>
 
             <div className="tape" aria-hidden="true">
