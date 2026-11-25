@@ -1,0 +1,49 @@
+name: followers
+
+on:
+  schedule:
+    # Every 6 hours. The site keeps the last good JSON if a fetch fails.
+    - cron: "15 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: followers
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: members
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.FOLLOWERS_PUSH_TOKEN != '' && secrets.FOLLOWERS_PUSH_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: members/package-lock.json
+      - run: npm ci
+      - run: npx tsx scripts/update-followers.ts
+        env:
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_GRAPH_VERSION: ${{ secrets.INSTAGRAM_GRAPH_VERSION }}
+          INSTAGRAM_SESSIONID: ${{ secrets.INSTAGRAM_SESSIONID }}
+      - name: Commit counts when they change
+        working-directory: .
+        run: |
+          git add members/src/lib/followers.json
+          if git diff --cached --quiet; then
+            echo "Sem mudança na contagem."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Atualiza a contagem de seguidores do Instagram e do TikTok"
+          git push

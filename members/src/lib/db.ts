@@ -108,6 +108,16 @@ CREATE TABLE IF NOT EXISTS practice_marks (
   created_at INTEGER NOT NULL,
   PRIMARY KEY (user_id, module_slug, month_key, item_id)
 );
+
+CREATE TABLE IF NOT EXISTS leads (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL DEFAULT '',
+  contact_type TEXT NOT NULL CHECK (contact_type IN ('email', 'whatsapp')),
+  contact TEXT NOT NULL,
+  page TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS leads_contact ON leads(contact);
 `;
 
 export type Sql = string | number | bigint | null | Uint8Array;

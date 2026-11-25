@@ -1,135 +1,127 @@
+// Revisar com um advogado antes de tratar este texto como versão final.
 import type { Metadata } from "next";
 import { DocPage } from "@/components/marketing/doc-page";
 
 export const metadata: Metadata = {
   title: { absolute: "Política de Privacidade — Método Barron" },
-  description: "Política de Privacidade do Método Barron, em conformidade com a LGPD.",
+  description: "Como o Método Barron trata nome, e-mail e WhatsApp, em conformidade com a LGPD.",
   robots: { index: false, follow: false },
   alternates: { canonical: "/privacidade" },
 };
 
 export default function PrivacidadePage() {
   return (
-    <DocPage footer={<> · <a href="/termos">Termos de Uso</a></>}>
+    <DocPage>
       <h1>Política de Privacidade</h1>
-      <p className="updated">Última atualização: 19 de agosto de 2026</p>
+      <p className="updated">Última atualização: 25 de novembro de 2026</p>
 
       <div className="notice">
-        <strong>Nota:</strong> este documento é um modelo baseado na Lei Geral de Proteção de Dados (LGPD — Lei nº
-        13.709/2018), pensado como ponto de partida. Antes de publicar, revise com um advogado e preencha os campos
-        destacados em vermelho com os dados reais da empresa.
+        <strong>Nota:</strong> este texto descreve o tratamento real do site hoje. Ele ainda deve ser revisado por um
+        advogado antes de ser tratado como versão definitiva.
       </div>
 
-      <h2>1. Introdução</h2>
+      <h2>1. Quem é o controlador</h2>
       <p>
-        Esta Política de Privacidade explica como o Método Barron (&quot;nós&quot;) coleta, usa, armazena e protege os dados
-        pessoais dos usuários da nossa plataforma, em conformidade com a Lei Geral de Proteção de Dados (LGPD).
+        O controlador dos dados pessoais tratados neste site é <strong>Método Barron</strong>. Contato do controlador e
+        canal para pedidos da LGPD: <a href="mailto:mtdbarron@proton.me">mtdbarron@proton.me</a>.
+      </p>
+      <p>
+        O site oferece um curso educacional de day trade nos futuros NQ e ES, uma área de membros e um material grátis
+        (planilha de diário de trades e checklist pré-mercado).
       </p>
 
-      <h2>2. Quem Somos (Controlador dos Dados)</h2>
-      <p>
-        <span className="placeholder">[Razão social]</span>, inscrita no CNPJ{" "}
-        <span className="placeholder">[00.000.000/0000-00]</span>, com sede em{" "}
-        <span className="placeholder">[endereço completo]</span>, é a controladora dos dados pessoais tratados por meio
-        desta Plataforma.
-      </p>
-
-      <h2>3. Dados Que Coletamos</h2>
+      <h2>2. Dados que coletamos</h2>
       <table>
         <tbody>
           <tr>
-            <th>Categoria</th>
-            <th>Exemplos</th>
+            <th>Situação</th>
+            <th>Dados</th>
           </tr>
           <tr>
-            <td>Dados de cadastro</td>
-            <td>Nome, e-mail, telefone</td>
+            <td>Material grátis</td>
+            <td>Nome (opcional), e-mail ou WhatsApp com DDD, página de origem e data do envio</td>
           </tr>
           <tr>
-            <td>Dados de pagamento</td>
-            <td>Processados por terceiros (ex: gateway de pagamento) — não armazenamos dados completos de cartão</td>
+            <td>Conta de membro</td>
+            <td>Nome de usuário, e-mail e senha (guardamos só o hash, nunca a senha em texto)</td>
           </tr>
           <tr>
-            <td>Dados de uso</td>
-            <td>Progresso nos cursos, interações na comunidade</td>
+            <td>Assinatura</td>
+            <td>
+              A Stripe processa o pagamento. Recebemos e-mail, identificadores de cliente e de assinatura, status e fim
+              do período. Não guardamos número completo de cartão.
+            </td>
           </tr>
           <tr>
-            <td>Dados técnicos</td>
-            <td>Endereço IP, tipo de dispositivo, cookies</td>
+            <td>Uso do curso</td>
+            <td>Aulas concluídas, respostas de quiz, itens de prática e pontos do ranking do mês</td>
           </tr>
           <tr>
-            <td>Dados opcionais</td>
-            <td>Instagram (usado para sorteios e ações de marketing, quando fornecido)</td>
+            <td>Técnicos</td>
+            <td>Endereço IP, por pouco tempo, para limitar abuso nos formulários; cookies de sessão e de consentimento</td>
           </tr>
         </tbody>
       </table>
 
-      <h2>4. Finalidade do Tratamento</h2>
-      <p>
-        Utilizamos seus dados para: viabilizar seu acesso e uso da Plataforma; processar pagamentos e assinaturas;
-        enviar comunicações sobre sua conta e, quando autorizado, conteúdo de marketing; realizar sorteios e ações
-        promocionais para quem fornecer o Instagram voluntariamente; melhorar nossos produtos; e cumprir obrigações
-        legais.
-      </p>
-
-      <h2>5. Base Legal (Art. 7º da LGPD)</h2>
-      <p>
-        O tratamento de dados ocorre com base em: execução de contrato (para prestar o serviço contratado),
-        consentimento (para comunicações de marketing), legítimo interesse (para melhorias da Plataforma) e cumprimento
-        de obrigação legal ou regulatória.
-      </p>
-
-      <h2>6. Compartilhamento de Dados</h2>
-      <p>
-        Podemos compartilhar dados com prestadores de serviço que nos auxiliam a operar a Plataforma — processadores de
-        pagamento, ferramentas de e-mail marketing, hospedagem e comunidade (ex: Discord) — sempre limitado ao necessário
-        para a finalidade contratada. Não vendemos dados pessoais a terceiros.
-      </p>
-
-      <h2>7. Cookies</h2>
-      <p>
-        Usamos cookies essenciais para o funcionamento da Plataforma e, com seu consentimento, cookies de análise e
-        marketing para entender o uso do site e melhorar nossas campanhas. Você pode gerenciar suas preferências de
-        cookies a qualquer momento no banner exibido ao acessar o site.
-      </p>
-
-      <h2>8. Seus Direitos como Titular de Dados</h2>
-      <p>De acordo com a LGPD, você tem direito a:</p>
+      <h2>3. Para que usamos</h2>
       <ul>
-        <li>Confirmar a existência de tratamento dos seus dados;</li>
-        <li>Acessar seus dados;</li>
-        <li>Corrigir dados incompletos, inexatos ou desatualizados;</li>
-        <li>Solicitar anonimização, bloqueio ou eliminação de dados desnecessários;</li>
-        <li>Solicitar a portabilidade dos dados a outro fornecedor;</li>
-        <li>Revogar o consentimento a qualquer momento;</li>
-        <li>Solicitar informações sobre com quem compartilhamos seus dados.</li>
+        <li>Entregar o material grátis e avisar a tropa sobre esse material, sem spam;</li>
+        <li>Criar a conta, liberar os 8 módulos e operar o ranking;</li>
+        <li>Cobrar a assinatura, aplicar a garantia de 7 dias e o cancelamento;</li>
+        <li>Medir o uso do site e, só com o seu aceite, campanhas da Meta e do TikTok;</li>
+        <li>Cumprir obrigação legal e responder aos seus pedidos.</li>
       </ul>
-      <p>Para exercer esses direitos, entre em contato pelo e-mail informado na seção 11.</p>
 
-      <h2>9. Retenção de Dados</h2>
+      <h2>4. Base legal</h2>
       <p>
-        Mantemos seus dados pelo tempo necessário para cumprir as finalidades descritas nesta política, ou conforme
-        exigido por obrigações legais, fiscais ou regulatórias.
+        Execução de contrato e de procedimentos preliminares, para conta, curso e material pedido. Consentimento, para
+        pixels de anúncio e para mensagens que não sejam necessárias à conta. Legítimo interesse, para segurança e para
+        a medição agregada do site. Obrigação legal, quando a lei exigir guarda de registro.
       </p>
 
-      <h2>10. Segurança da Informação</h2>
+      <h2>5. Com quem compartilhamos</h2>
+      <p>Não vendemos dados pessoais. O compartilhamento fica limitado a quem opera o serviço:</p>
+      <ul>
+        <li>Vercel, hospedagem e medição agregada do site (Web Analytics, sem cookie de publicidade);</li>
+        <li>Stripe, pagamento e portal de assinatura;</li>
+        <li>Meta e TikTok, somente se você aceitar o banner de cookies e os pixels estiverem configurados;</li>
+        <li>Telegram, só se você mesmo entrar na Tropa do Barron pelo link;</li>
+        <li>Um endpoint que você configurar para receber os contatos do material grátis, se houver.</li>
+      </ul>
       <p>
-        Adotamos medidas técnicas e organizacionais razoáveis para proteger seus dados contra acesso não autorizado,
-        perda ou alteração. Nenhum sistema é 100% infalível, e nos comprometemos a notificar você e a Autoridade
-        Nacional de Proteção de Dados (ANPD) em caso de incidente relevante, conforme exigido por lei.
+        Alguns desses operadores podem tratar dados fora do Brasil. Nesses casos, buscamos contratos e medidas
+        compatíveis com a LGPD.
       </p>
 
-      <h2>11. Encarregado de Dados (DPO) e Contato</h2>
+      <h2>6. Cookies</h2>
       <p>
-        Para dúvidas, solicitações ou reclamações sobre esta Política, entre em contato com nosso Encarregado de
-        Proteção de Dados: <span className="placeholder">[e-mail do DPO/contato]</span>.
+        Cookies de sessão e o registro da sua escolha no banner são necessários para entrar na conta e lembrar se você
+        aceitou ou recusou anúncios. A medição da Vercel não usa cookie de publicidade. Os pixels da Meta e do TikTok
+        só são carregados depois de <strong>Aceitar</strong>. <strong>Recusar</strong> impede o carregamento desses
+        pixels. A escolha fica neste navegador até você limpar os dados do site.
       </p>
 
-      <h2>12. Alterações Nesta Política</h2>
+      <h2>7. Por quanto tempo</h2>
       <p>
-        Podemos atualizar esta Política periodicamente. A data da última atualização está indicada no topo desta página.
-        Recomendamos revisitar este documento com regularidade.
+        Conta, progresso e assinatura ficam enquanto a conta existir e pelo prazo em que a lei exigir a guarda. O
+        contato do material grátis fica enquanto for útil para esse envio e para a prova do consentimento, e pode ser
+        apagado quando você pedir, salvo dever legal de retenção.
       </p>
+
+      <h2>8. Seus direitos</h2>
+      <p>Você pode pedir confirmação, acesso, correção, anonimização, bloqueio, eliminação, portabilidade e informação sobre compartilhamentos. Pode revogar o consentimento quando ele for a base do tratamento. Para isso, escreva para <a href="mailto:mtdbarron@proton.me">mtdbarron@proton.me</a>. Também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).</p>
+
+      <h2>9. Crianças e adolescentes</h2>
+      <p>O curso é dirigido a maiores de 18 anos. Não coletamos dados de crianças de propósito.</p>
+
+      <h2>10. Segurança</h2>
+      <p>
+        Usamos HTTPS, senha com hash e acesso restrito aos módulos sem assinatura ativa. Nenhum sistema é infalível. Em
+        incidente relevante, avisaremos os titulares e a ANPD quando a lei exigir.
+      </p>
+
+      <h2>11. Atualizações</h2>
+      <p>A data no topo muda quando esta política mudar. O uso do site depois da mudança vale como ciência da nova versão.</p>
     </DocPage>
   );
 }
