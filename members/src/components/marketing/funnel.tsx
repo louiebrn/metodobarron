@@ -1,15 +1,63 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Logo } from "@/components/logo";
 import { formatFollowers } from "@/lib/follower-format";
 import { trackIfConsented } from "@/lib/pixel-events";
 import { AXI_AFFILIATE_URL, QUIZ_QUESTIONS, TROPA_URL, resultCopy, type AnswerId, type QuizAnswers } from "@/lib/quiz";
 import "./funnel.css";
 
-type Step = "landing" | "question" | "details" | "minor" | "results";
+type Step = "landing" | "question" | "analyzing" | "details" | "minor" | "results";
 
 const EMPTY: Partial<QuizAnswers> = {};
+const TROPA_MEMBERS = 1000;
+
+const NUDGE = [
+  "A idade só decide se este caminho é para você.",
+  "Sem julgamento. É o tamanho que você pensa hoje.",
+  "Todo mundo começa em algum ponto da curva.",
+  "O objetivo muda o próximo passo. Não promete resultado.",
+  "Uma rotina boa cabe no dia que você já tem.",
+  "A conta é o passo prático. A tropa é o método.",
+];
+
+const OPTION_ICON: Record<string, string> = {
+  "18-24": "✦",
+  "25-34": "⚡",
+  "35-44": "🎯",
+  "45-plus": "◆",
+  under18: "⛔",
+  "up-to-500": "🪙",
+  "500-2k": "🔧",
+  "2k-10k": "🧭",
+  "over-10k": "🏔️",
+  never: "🌑",
+  tried: "🧪",
+  sometimes: "📆",
+  weekly: "🔁",
+  extra: "➕",
+  learn: "📚",
+  copy: "📋",
+  live: "🌅",
+  "under-30": "⏱️",
+  "about-1h": "🕐",
+  "2-3h": "🕒",
+  "all-day": "☀️",
+  no: "✖️",
+  other: "🏦",
+  axi: "✅",
+  unsure: "❓",
+};
+
+const SHOTS = [
+  { src: "/funnel/desk.webp", alt: "Mesa vazia com três monitores e gráficos à noite.", width: 1280, height: 720 },
+  { src: "/funnel/skyline.webp", alt: "Horizonte de uma cidade moderna à noite, sem pessoas.", width: 1280, height: 720 },
+  { src: "/funnel/car.webp", alt: "Volante de um carro à noite, sem motorista.", width: 1280, height: 720 },
+  { src: "/funnel/watch.webp", alt: "Relógio no pulso ao lado de um gráfico, sem rosto.", width: 1152, height: 864 },
+];
+
+const TAPE = ["NQ", "ES", "ilustrativo", "sem cotação", "método", "risco"];
 
 function campaign() {
   const params = new URLSearchParams(window.location.search);
@@ -57,8 +105,16 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
     };
   }, []);
 
+  useEffect(() => {
+    if (step !== "analyzing") return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => setStep("details"), reduce ? 200 : 1400);
+    return () => window.clearTimeout(timer);
+  }, [step]);
+
   const question = QUIZ_QUESTIONS[index];
   const copy = isComplete(answers) ? resultCopy(answers) : null;
+  const total = counts.instagram + counts.tiktok;
 
   function reset() {
     setStep("landing");
@@ -68,9 +124,15 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
     setPending(false);
   }
 
+  function start() {
+    setIndex(0);
+    setError("");
+    setStep("question");
+  }
+
   function back() {
     setError("");
-    if (step === "details") {
+    if (step === "details" || step === "analyzing") {
       setIndex(QUIZ_QUESTIONS.length - 1);
       setStep("question");
       return;
@@ -97,7 +159,7 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
       setStep("question");
       return;
     }
-    setStep("details");
+    setStep("analyzing");
   }
 
   async function submit(event: React.FormEvent) {
@@ -154,9 +216,9 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
 
   return (
     <div className="funnel">
-      <div className="funnel-aurora" aria-hidden="true">
-        <span className="a1" />
-        <span className="a2" />
+      <div className="funnel-grid" aria-hidden="true" />
+      <div className="funnel-candles" aria-hidden="true">
+        <Candles />
       </div>
       <header className="funnel-top">
         <Logo href="/" />
@@ -166,40 +228,164 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
       </header>
       <main className="funnel-main">
         {step === "landing" ? (
-          <section>
-            <p className="funnel-kicker">
-              <i className="funnel-dot" aria-hidden="true" />
-              <span>
-                Instagram <b>{formatFollowers(counts.instagram)}</b>
-              </span>
-              <span aria-hidden="true">·</span>
-              <span>
-                TikTok <b>{formatFollowers(counts.tiktok)}</b>
-              </span>
-            </p>
-            <h1>
-              Descubra o seu próximo passo <span className="funnel-grad">no day trade.</span>
-            </h1>
-            <p className="funnel-lead">Um minuto com a tropa do Barron para futuros NQ e ES, com método e sem promessa.</p>
-            <button
-              className="funnel-cta"
-              type="button"
-              onClick={() => {
-                setIndex(0);
-                setStep("question");
-              }}
-            >
-              Começar
-              <span aria-hidden="true">
-                <Arrow />
-              </span>
-            </button>
-            <p className="funnel-note">Só para maiores de 18. Conteúdo educacional.</p>
-          </section>
+          <div className="funnel-pane">
+            <section>
+              <p className="eyebrow">Diagnóstico da tropa</p>
+              <h1>
+                Day trade sem <span className="funnel-grad">método</span> é só pressa.
+              </h1>
+              <p className="funnel-lead">
+                Seis perguntas para achar o seu próximo passo nos futuros NQ e ES. A tropa do Barron, sem promessa de lucro.
+              </p>
+              <ul className="funnel-trust">
+                <li>Grátis</li>
+                <li>60 segundos</li>
+                <li>6 perguntas</li>
+              </ul>
+              <button className="funnel-cta" type="button" onClick={start}>
+                Começar meu diagnóstico (grátis, 60s)
+                <span className="ar" aria-hidden="true">
+                  <Arrow />
+                </span>
+              </button>
+              <p className="funnel-note">Só para maiores de 18. Conteúdo educacional.</p>
+            </section>
+
+            <div className="tape" aria-hidden="true">
+              <div className="tape-track">
+                {[...TAPE, ...TAPE, ...TAPE].map((item, i) => (
+                  <span key={i}>
+                    {item === "ilustrativo" ? <b>{item}</b> : item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <p className="funnel-note">Faixa ilustrativa. Não é cotação.</p>
+
+            <section className="proof">
+              <p className="eyebrow">Prova</p>
+              <h2>A tropa já está reunida.</h2>
+              <p className="funnel-lead">Números reais de seguidores. A tropa no Telegram é cerca de 1.000 pessoas.</p>
+              <div className="counts">
+                <p className="count">
+                  <CountUp value={counts.tiktok} />
+                  <span>TikTok</span>
+                </p>
+                <p className="count">
+                  <CountUp value={counts.instagram} />
+                  <span>Instagram</span>
+                </p>
+                <p className="count">
+                  <CountUp value={total} />
+                  <span>soma</span>
+                </p>
+                <p className="count">
+                  <CountUp value={TROPA_MEMBERS} />
+                  <span>cerca de 1.000 na tropa</span>
+                </p>
+              </div>
+              <div className="badges">
+                <span className="badge"><i /> TikTok</span>
+                <span className="badge"><i /> Instagram</span>
+                <span className="badge"><i /> Telegram</span>
+              </div>
+            </section>
+
+            <section className="block">
+              <p className="eyebrow">Como funciona</p>
+              <div className="steps">
+                <article className="step">
+                  <em>1</em>
+                  <div>
+                    <strong>Responda</strong>
+                    <p>Seis toques. Um minuto.</p>
+                  </div>
+                </article>
+                <article className="step">
+                  <em>2</em>
+                  <div>
+                    <strong>Receba seu plano</strong>
+                    <p>Um perfil e o próximo passo.</p>
+                  </div>
+                </article>
+                <article className="step">
+                  <em>3</em>
+                  <div>
+                    <strong>Entre na tropa</strong>
+                    <p>Conta na Axi e o Telegram.</p>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className="block">
+              <p className="eyebrow">Na tropa</p>
+              <h2>O que você encontra lá.</h2>
+              <div className="gets">
+                <article className="get">
+                  <em>01</em>
+                  <div>
+                    <strong>Método</strong>
+                    <p>NQ e ES com um jeito de ler o mercado.</p>
+                  </div>
+                </article>
+                <article className="get">
+                  <em>02</em>
+                  <div>
+                    <strong>Risco</strong>
+                    <p>Tamanho e stop antes da pressa.</p>
+                  </div>
+                </article>
+                <article className="get">
+                  <em>03</em>
+                  <div>
+                    <strong>Rotina</strong>
+                    <p>Um bloco que cabe no seu dia.</p>
+                  </div>
+                </article>
+                <article className="get">
+                  <em>04</em>
+                  <div>
+                    <strong>Grupo</strong>
+                    <p>A tropa no Telegram, sem palpite solto.</p>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className="block">
+              <p className="eyebrow">Clima</p>
+              <h2>O ambiente. Não o extrato.</h2>
+              <p className="funnel-lead">Imagens de clima. Não são prints de resultado e não prometem renda.</p>
+              <div className="gallery">
+                <div className="gallery-track">
+                  {[...SHOTS, ...SHOTS].map((shot, i) => (
+                    <figure key={`${shot.src}-${i}`}>
+                      <Image
+                        src={shot.src}
+                        alt={i < SHOTS.length ? shot.alt : ""}
+                        width={shot.width}
+                        height={shot.height}
+                        sizes="320px"
+                        priority={i === 0}
+                      />
+                      {i < SHOTS.length ? <figcaption>{shot.alt}</figcaption> : null}
+                    </figure>
+                  ))}
+                </div>
+              </div>
+              <button className="funnel-cta" type="button" onClick={start}>
+                Começar meu diagnóstico (grátis, 60s)
+                <span className="ar" aria-hidden="true">
+                  <Arrow />
+                </span>
+              </button>
+            </section>
+          </div>
         ) : null}
 
         {step === "question" && question ? (
-          <section aria-labelledby="quiz-q">
+          <section className="funnel-pane" aria-labelledby="quiz-q" key={question.id}>
             <button className="funnel-back" type="button" onClick={back}>
               Voltar
             </button>
@@ -219,6 +405,7 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
             <h1 id="quiz-q" className="funnel-q">
               {question.prompt}
             </h1>
+            <p className="nudge">{NUDGE[index]}</p>
             <div className="funnel-options">
               {question.options.map((option) => (
                 <button
@@ -227,29 +414,52 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
                   type="button"
                   onClick={() => choose(option.id)}
                 >
+                  <span className="ic" aria-hidden="true">
+                    {OPTION_ICON[option.id] ?? "•"}
+                  </span>
                   {option.label}
-                  <Arrow />
+                  <span className="go" aria-hidden="true">
+                    <Arrow />
+                  </span>
                 </button>
               ))}
               {question.minor ? (
                 <button className="funnel-option minor" type="button" onClick={() => choose(question.minor!.id)}>
+                  <span className="ic" aria-hidden="true">
+                    {OPTION_ICON[question.minor.id]}
+                  </span>
                   {question.minor.label}
-                  <Arrow />
+                  <span className="go" aria-hidden="true">
+                    <Arrow />
+                  </span>
                 </button>
               ) : null}
             </div>
           </section>
         ) : null}
 
+        {step === "analyzing" ? (
+          <section className="scan funnel-pane" aria-live="polite">
+            <p className="eyebrow">Quase lá</p>
+            <div className="scan-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </div>
+            <h1 className="funnel-q">Analisando suas respostas…</h1>
+            <p className="funnel-lead">Montando um perfil. Sem promessa no meio do caminho.</p>
+          </section>
+        ) : null}
+
         {step === "minor" ? (
-          <section>
-            <h1>Este caminho é só para maiores de 18.</h1>
+          <section className="funnel-pane">
+            <h1 className="funnel-q">Este caminho é só para maiores de 18.</h1>
             <p className="funnel-lead">
               A Axi atende adultos. Não guardamos essa resposta. Quando você fizer 18 anos, a tropa continua aqui.
             </p>
             <button className="funnel-cta" type="button" onClick={reset}>
               Voltar ao início
-              <span aria-hidden="true">
+              <span className="ar" aria-hidden="true">
                 <Arrow />
               </span>
             </button>
@@ -257,7 +467,7 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
         ) : null}
 
         {step === "details" ? (
-          <section>
+          <section className="funnel-pane">
             <button className="funnel-back" type="button" onClick={back}>
               Voltar
             </button>
@@ -265,7 +475,7 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
             <div className="funnel-bar" aria-hidden="true">
               <i style={{ width: "100%" }} />
             </div>
-            <h1 className="funnel-q">Para onde enviamos o seu caminho?</h1>
+            <h1 className="funnel-q">Seu perfil está pronto. Para onde enviamos?</h1>
             <form className="funnel-form" onSubmit={submit} noValidate>
               <label className="funnel-field">
                 Nome
@@ -328,8 +538,8 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
                 </p>
               ) : null}
               <button className="funnel-cta" type="submit" disabled={pending}>
-                {pending ? "Enviando…" : "Ver o meu caminho"}
-                <span aria-hidden="true">
+                {pending ? "Enviando…" : "Ver o meu perfil"}
+                <span className="ar" aria-hidden="true">
                   <Arrow />
                 </span>
               </button>
@@ -338,17 +548,23 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
         ) : null}
 
         {step === "results" && copy ? (
-          <section>
+          <section className="funnel-pane">
             <p className="funnel-step">Seu caminho</p>
+            <p className="perfil">{copy.perfil}</p>
             <h1 className="funnel-q">{copy.title}</h1>
             <p className="funnel-lead">{copy.text}</p>
+            <ul className="check">
+              {copy.checklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
             <div className="funnel-steps">
               <article className="funnel-card">
                 <b>Passo 1</b>
                 <p>Abra sua conta na Axi pelo link da tropa.</p>
                 <a className="funnel-cta" href={AXI_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
                   Abrir conta na Axi
-                  <span aria-hidden="true">
+                  <span className="ar" aria-hidden="true">
                     <Arrow />
                   </span>
                 </a>
@@ -358,7 +574,7 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
                 <p>Entre na Tropa do Barron no Telegram.</p>
                 <a className="funnel-cta" href={TROPA_URL} target="_blank" rel="noopener noreferrer">
                   Entrar na Tropa do Barron
-                  <span aria-hidden="true">
+                  <span className="ar" aria-hidden="true">
                     <Arrow />
                   </span>
                 </a>
@@ -386,10 +602,46 @@ function isComplete(answers: Partial<QuizAnswers>): answers is QuizAnswers {
   return QUIZ_QUESTIONS.every((question) => Boolean(answers[question.id as AnswerId]));
 }
 
+function CountUp({ value }: { value: number }) {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setShown(value);
+      return;
+    }
+    const start = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 1100);
+      const eased = 1 - (1 - t) ** 3;
+      setShown(Math.round(value * eased));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return <b>{formatFollowers(shown)}</b>;
+}
+
 function Arrow() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+function Candles() {
+  const bars = [28, 46, 22, 54, 36, 62, 30, 48, 24, 58, 40, 18, 50, 34, 66, 26, 44, 32, 60, 38];
+  return (
+    <svg viewBox="0 0 800 160" preserveAspectRatio="none">
+      {bars.map((height, i) => (
+        <rect key={i} x={i * 40 + 8} y={140 - height} width="10" height={height} rx="2" fill={i % 3 === 0 ? "#62b3ff" : "#2ee6c8"} />
+      ))}
+      {bars.map((height, i) => (
+        <rect key={`b-${i}`} x={800 + i * 40 + 8} y={140 - height} width="10" height={height} rx="2" fill={i % 3 === 0 ? "#62b3ff" : "#2ee6c8"} />
+      ))}
     </svg>
   );
 }

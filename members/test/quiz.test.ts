@@ -112,6 +112,8 @@ test("failed webhook is not reported as saved", async () => {
 
 test("result copy stays educational", () => {
   const copy = resultCopy({ ...answers, goal: "copy" });
+  assert.equal(copy.perfil, "Curioso de Sinais");
   assert.match(copy.text, /tropa/);
-  assert.doesNotMatch(`${copy.title} ${copy.text}`, /galera|garantimos lucro|R\$97/i);
+  assert.equal(copy.checklist.length, 3);
+  assert.doesNotMatch(`${copy.perfil} ${copy.title} ${copy.text}`, /galera|garantimos lucro|R\$97/i);
 });

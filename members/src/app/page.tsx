@@ -6,16 +6,16 @@ import { readFollowerFile } from "@/lib/followers";
 const counts = readFollowerFile();
 const totalLabel = formatFollowers(followerTotal(counts));
 
-const description = `Quiz de 1 minuto da tropa do Barron (+${totalLabel} no Instagram e TikTok) para o próximo passo no day trade dos futuros NQ e ES. Conteúdo educacional, sem promessa de lucro.`;
+const description = `Diagnóstico grátis de 60 segundos da tropa do Barron (+${totalLabel} no Instagram e TikTok) para futuros NQ e ES. Conteúdo educacional, sem promessa de lucro.`;
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Método Barron | Descubra o seu próximo passo no day trade",
+    absolute: "Método Barron | Day trade com método, não no escuro",
   },
   description,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Método Barron: o seu próximo passo no day trade",
+    title: "Método Barron: day trade com método",
     description,
     url: "/",
     images: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Método Barron: o seu próximo passo no day trade",
+    title: "Método Barron: day trade com método",
     description,
     images: ["/og-image.png"],
   },

@@ -234,39 +234,71 @@ export function parseQuizLead(input: QuizLeadInput, now = new Date()): ParsedQui
   };
 }
 
-export function resultCopy(answers: QuizAnswers): { title: string; text: string } {
+export type ResultCopy = {
+  perfil: string;
+  title: string;
+  text: string;
+  checklist: string[];
+};
+
+function plan(perfil: string, title: string, text: string, extra: string): ResultCopy {
+  return {
+    perfil,
+    title,
+    text,
+    checklist: [
+      "Abrir a conta na Axi pelo link da tropa",
+      "Entrar no Telegram e ficar com o método, não com o palpite",
+      extra,
+    ],
+  };
+}
+
+export function resultCopy(answers: QuizAnswers): ResultCopy {
   if (answers.goal === "copy") {
-    return {
-      title: "Copiar entrada não é o caminho.",
-      text: "O objetivo de copiar sinais é comum. Na tropa o passo é entender o porquê, no seu ritmo, antes de aumentar o tamanho. Abra a conta e entre no grupo.",
-    };
+    return plan(
+      "Curioso de Sinais",
+      "Copiar entrada não é o caminho.",
+      "Querer sinal pronto é comum. Na tropa o passo é entender o porquê, no seu ritmo, antes de aumentar o tamanho.",
+      "Separar o que é método do que é só copiar",
+    );
   }
   if (answers.broker === "axi" && answers.experience !== "never" && answers.experience !== "tried") {
-    return {
-      title: "Você já tem conta e alguma rotina.",
-      text: "Com a Axi aberta, o próximo passo é a tropa: método e risco, sem promessa de viver de trade amanhã.",
-    };
+    return plan(
+      "Conta Pronta",
+      "Você já tem conta e alguma rotina.",
+      "Com a Axi aberta, o próximo passo é a tropa: método e risco. Ninguém aqui promete viver de trade amanhã.",
+      "Revisar tamanho e stop antes da próxima semana",
+    );
   }
   if ((answers.experience === "never" || answers.experience === "tried") && answers.dailyTime === "under-30") {
-    return {
-      title: "Pouco tempo pede um começo pequeno.",
-      text: "Menos de uma hora por dia cabe num bloco curto, de preferência no simulador. O passo 1 abre a conta na Axi. O passo 2 é entrar na tropa.",
-    };
+    return plan(
+      "Iniciante Estratégico",
+      "Pouco tempo pede um começo pequeno.",
+      "Menos de uma hora por dia cabe num bloco curto, de preferência no simulador. A conta e a tropa são os dois passos.",
+      "Marcar um bloco fixo no simulador",
+    );
   }
   if (answers.goal === "live") {
-    return {
-      title: "Viver de trade é meta, não atalho.",
-      text: "Dá para estudar com método e risco limitado. Ninguém aqui garante renda. A conta na Axi e a tropa são os dois passos de agora.",
-    };
+    return plan(
+      "Visão de Longo Prazo",
+      "Viver de trade é meta, não atalho.",
+      "Dá para estudar com método e risco limitado. Ninguém aqui garante renda. A conta na Axi e a tropa são o começo.",
+      "Tratar a meta como anos de prática, não como um mês",
+    );
   }
   if (answers.goal === "learn") {
-    return {
-      title: "Aprender a operar combina com este começo.",
-      text: "Pelo que você respondeu, o próximo passo é a conta na Axi e a tropa do Barron, no horário que você já tem.",
-    };
+    return plan(
+      "Estudante de Método",
+      "Aprender a operar combina com este começo.",
+      "Pelo que você respondeu, o próximo passo é a conta na Axi e a tropa do Barron, no horário que você já tem.",
+      "Estudar um setup por vez, com risco escrito antes",
+    );
   }
-  return {
-    title: "Seu próximo passo está definido.",
-    text: "Renda extra pede método e um tamanho que você aguenta perder. Abra a conta e entre na tropa para seguir com calma.",
-  };
+  return plan(
+    "Foco em Renda Extra",
+    "Renda extra pede limite, não pressa.",
+    "O caminho é método e um tamanho que você aguenta perder. Abra a conta e entre na tropa para seguir com calma.",
+    "Definir um teto de risco antes de operar",
+  );
 }
