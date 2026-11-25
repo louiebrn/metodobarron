@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import { Funnel } from "@/components/marketing/funnel";
-import { formatFollowers, followerTotal } from "@/lib/follower-format";
-import { readFollowerFile } from "@/lib/followers";
 
-const counts = readFollowerFile();
-const totalLabel = formatFollowers(followerTotal(counts));
-
-const description = `Diagnóstico grátis de 60 segundos da tropa do Barron (+${totalLabel} no Instagram e TikTok) para futuros NQ e ES. Conteúdo educacional, sem promessa de lucro.`;
+const description =
+  "Diagnóstico grátis de 60 segundos da tropa do Barron (TikTok 50k+, Instagram 30k+) para futuros NQ e ES. Conteúdo educacional, sem promessa de lucro.";
 
 export const metadata: Metadata = {
   title: {
@@ -37,5 +33,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <Funnel instagram={counts.instagram} tiktok={counts.tiktok} />;
+  return <Funnel />;
 }

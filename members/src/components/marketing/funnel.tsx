@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Logo } from "@/components/logo";
-import { formatFollowers } from "@/lib/follower-format";
 import { trackIfConsented } from "@/lib/pixel-events";
 import { AXI_AFFILIATE_URL, QUIZ_QUESTIONS, TROPA_URL, resultCopy, type AnswerId, type QuizAnswers } from "@/lib/quiz";
 import "./funnel.css";
@@ -11,7 +10,19 @@ import "./funnel.css";
 type Step = "landing" | "question" | "analyzing" | "details" | "minor" | "results";
 
 const EMPTY: Partial<QuizAnswers> = {};
-const TROPA_MEMBERS = 1000;
+
+const PROOF = [
+  { value: "50k+", label: "TikTok" },
+  { value: "30k+", label: "Instagram" },
+  { value: "1k+", label: "Telegram" },
+] as const;
+
+const LIFE = [
+  { src: "/lifestyle/barron-1.webp", alt: "Relógio e corrente. Foto da tropa, não é resultado de operação.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-2.webp", alt: "Interior de um carro, com outro carro do lado de fora.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-3.webp", alt: "Relógio no pulso ao lado de um prato.", width: 900, height: 1600 },
+  { src: "/lifestyle/barron-4.webp", alt: "Casa e piscina à noite.", width: 900, height: 1600 },
+] as const;
 
 const NUDGE = [
   "A idade só decide se este caminho é para você.",
@@ -72,8 +83,7 @@ function campaign() {
   };
 }
 
-export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: number }) {
-  const [counts, setCounts] = useState({ instagram, tiktok });
+export function Funnel() {
   const [step, setStep] = useState<Step>("landing");
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<QuizAnswers>>(EMPTY);
@@ -87,25 +97,6 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/followers", { headers: { accept: "application/json" } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { instagram?: number; tiktok?: number } | null) => {
-        if (cancelled || !data) return;
-        const nextIg = Number(data.instagram);
-        const nextTt = Number(data.tiktok);
-        if (!Number.isFinite(nextIg) || !Number.isFinite(nextTt)) return;
-        setCounts({ instagram: nextIg, tiktok: nextTt });
-      })
-      .catch(() => {
-        /* Mantém o último número conhecido. */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     if (step !== "analyzing") return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timer = window.setTimeout(() => setStep("details"), reduce ? 200 : 1400);
@@ -114,7 +105,6 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
 
   const question = QUIZ_QUESTIONS[index];
   const copy = isComplete(answers) ? resultCopy(answers) : null;
-  const total = counts.instagram + counts.tiktok;
 
   function reset() {
     setStep("landing");
@@ -265,29 +255,14 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
             <section className="proof">
               <p className="eyebrow">Prova</p>
               <h2>A tropa já está reunida.</h2>
-              <p className="funnel-lead">Números reais de seguidores. A tropa no Telegram é cerca de 1.000 pessoas.</p>
+              <p className="funnel-lead">TikTok 50k+. Instagram 30k+. Telegram 1k+.</p>
               <div className="counts">
-                <p className="count">
-                  <CountUp value={counts.tiktok} />
-                  <span>TikTok</span>
-                </p>
-                <p className="count">
-                  <CountUp value={counts.instagram} />
-                  <span>Instagram</span>
-                </p>
-                <p className="count">
-                  <CountUp value={total} />
-                  <span>soma</span>
-                </p>
-                <p className="count">
-                  <CountUp value={TROPA_MEMBERS} />
-                  <span>cerca de 1.000 na tropa</span>
-                </p>
-              </div>
-              <div className="badges">
-                <span className="badge"><i /> TikTok</span>
-                <span className="badge"><i /> Instagram</span>
-                <span className="badge"><i /> Telegram</span>
+                {PROOF.map((item) => (
+                  <p className="count" key={item.label}>
+                    <b>{item.value}</b>
+                    <span>{item.label}</span>
+                  </p>
+                ))}
               </div>
             </section>
 
@@ -381,6 +356,7 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
                 </span>
               </button>
             </section>
+            <LifeGallery />
           </div>
         ) : null}
 
@@ -580,8 +556,9 @@ export function Funnel({ instagram, tiktok }: { instagram: number; tiktok: numbe
                 </a>
               </article>
             </div>
+            <LifeGallery />
             <p className="funnel-warn">Não é recomendação de investimento. Trading envolve risco.</p>
-            <button className="funnel-back" type="button" onClick={reset} style={{ marginTop: 18 }}>
+            <button className="funnel-back" type="button" onClick={reset}>
               Refazer
             </button>
           </section>
@@ -602,26 +579,27 @@ function isComplete(answers: Partial<QuizAnswers>): answers is QuizAnswers {
   return QUIZ_QUESTIONS.every((question) => Boolean(answers[question.id as AnswerId]));
 }
 
-function CountUp({ value }: { value: number }) {
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setShown(value);
-      return;
-    }
-    const start = performance.now();
-    let frame = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / 1100);
-      const eased = 1 - (1 - t) ** 3;
-      setShown(Math.round(value * eased));
-      if (t < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [value]);
-  return <b>{formatFollowers(shown)}</b>;
+function LifeGallery() {
+  return (
+    <section className="block life">
+      <p className="eyebrow">Estilo</p>
+      <h2>O estilo de vida da tropa.</h2>
+      <p className="funnel-lead">Fotos do dia a dia. Não são resultado de trade e não prometem renda.</p>
+      <div className="life-row">
+        {LIFE.map((photo) => (
+          <figure key={photo.src}>
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              width={photo.width}
+              height={photo.height}
+              sizes="(max-width: 900px) 72vw, 22vw"
+            />
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function Arrow() {

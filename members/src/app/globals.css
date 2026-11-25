@@ -793,6 +793,9 @@ legend { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; padding:
     align-items: stretch;
     bottom: calc(88px + env(safe-area-inset-bottom));
   }
+  body:has(.funnel) .lgpd {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
   .lgpd-actions { justify-content: stretch; }
   .lgpd button { flex: 1; }
 }

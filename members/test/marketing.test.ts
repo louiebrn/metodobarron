@@ -9,6 +9,11 @@ test("home is a short quiz funnel without the old sales page", () => {
   const quiz = readFileSync(new URL("../src/lib/quiz.ts", import.meta.url), "utf8");
   const source = page + funnel + quiz;
   assert.match(funnel, /Começar/);
+  assert.match(funnel, /50k\+/);
+  assert.match(funnel, /30k\+/);
+  assert.match(funnel, /1k\+/);
+  assert.match(funnel, /O estilo de vida da tropa/);
+  assert.doesNotMatch(funnel, /CountUp|cerca de|soma/);
   assert.match(funnel, /Entrar na Tropa do Barron/);
   assert.match(funnel, /Não é recomendação de investimento/);
   assert.match(funnel, /Trading envolve risco/);

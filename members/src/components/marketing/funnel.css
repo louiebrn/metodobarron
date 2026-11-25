@@ -53,19 +53,20 @@
 }
 .funnel-login { font-size: 14px; font-weight: 650; color: var(--muted); padding: 8px 4px; }
 .funnel-main {
-  max-width: 1080px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 18px 20px calc(108px + env(safe-area-inset-bottom));
+  padding: 24px 20px calc(120px + env(safe-area-inset-bottom));
 }
 .funnel-pane { animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .funnel h1 {
-  margin: 14px 0 12px;
-  font-size: clamp(2.55rem, 1.1rem + 6.2vw, 5.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.048em;
+  margin: 16px 0 16px;
+  font-size: clamp(2.45rem, 1.15rem + 5.2vw, 5rem);
+  line-height: 1.08;
+  letter-spacing: -0.028em;
   font-weight: 800;
-  max-width: 12ch;
+  max-width: 14ch;
+  padding-right: 0.06em;
 }
 .funnel-grad {
   background: linear-gradient(100deg, #2ee6c8, #7cf0dc 40%, #62b3ff);
@@ -124,7 +125,10 @@
   color: var(--teal);
   flex: none;
 }
-.funnel-cta:active { transform: scale(0.98); }
+@media (max-width: 480px) {
+  .funnel-cta { width: 100%; font-size: 15px; }
+}
+.funnel-warn + .funnel-back { display: inline-block; margin-top: 16px; }
 .funnel-cta[disabled] { opacity: 0.65; cursor: progress; animation: none; }
 .funnel-note { margin: 14px 0 0; color: var(--dim); font-size: 12px; }
 
@@ -149,46 +153,35 @@
 }
 .tape b { color: var(--teal); font-weight: 750; }
 
-.proof { margin-top: 36px; }
+.proof, .block { margin-top: 48px; }
 .proof h2, .block h2 {
-  font-size: clamp(1.6rem, 1.1rem + 2vw, 2.4rem);
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-  margin: 0 0 8px;
-  max-width: 16ch;
+  font-size: clamp(1.7rem, 1.15rem + 1.6vw, 2.35rem);
+  letter-spacing: -0.022em;
+  line-height: 1.18;
+  margin: 0 0 12px;
+  max-width: 18ch;
+  padding-right: 0.08em;
 }
 .eyebrow { margin: 0 0 8px; color: var(--teal); font-size: 12px; font-weight: 750; letter-spacing: 0.16em; text-transform: uppercase; }
-.counts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
 .count {
-  padding: 16px;
+  padding: 18px 12px;
   border-radius: 20px;
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
   backdrop-filter: blur(16px);
+  text-align: center;
 }
-.count b { display: block; font-size: clamp(1.8rem, 1.2rem + 2vw, 2.6rem); letter-spacing: -0.04em; }
-.count span { color: var(--muted); font-size: 13px; }
-.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line-2);
-  background: rgba(11, 12, 15, 0.45);
-  font-size: 13px;
-  font-weight: 700;
-}
-.badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+.count b { display: block; font-size: clamp(1.45rem, 2.4vw + 0.8rem, 2.4rem); letter-spacing: -0.02em; line-height: 1.1; }
+.count span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
 
-.steps, .gets { display: grid; gap: 10px; margin-top: 16px; }
+.steps, .gets { display: grid; gap: 12px; margin-top: 20px; }
 .step, .get {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 12px;
   align-items: center;
-  padding: 14px;
+  padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.035);
@@ -207,18 +200,48 @@
 .get em { background: rgba(46, 230, 200, 0.12); color: var(--teal); border: 1px solid rgba(46, 230, 200, 0.3); }
 .step strong, .get strong { display: block; }
 .step p, .get p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
-.block { margin-top: 34px; }
-
-.gallery { margin-top: 18px; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.gallery { margin-top: 20px; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
 .gallery-track { display: flex; gap: 12px; width: max-content; animation: tape 36s linear infinite; }
 .gallery figure { margin: 0; width: min(78vw, 320px); }
 .gallery img { width: 100%; height: 200px; object-fit: cover; border-radius: 18px; border: 1px solid var(--line); }
 .gallery figcaption { margin-top: 6px; color: var(--dim); font-size: 12px; }
 
 .funnel h1.funnel-q {
-  font-size: clamp(1.85rem, 1.05rem + 2vw, 2.9rem);
-  max-width: 16ch;
-  margin-top: 10px;
+  font-size: clamp(1.85rem, 1.05rem + 1.6vw, 2.75rem);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+  max-width: 18ch;
+  margin-top: 12px;
+}
+.life-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 2px 12px;
+  scrollbar-width: none;
+}
+.life-row::-webkit-scrollbar { display: none; }
+.life-row figure {
+  flex: 0 0 74%;
+  margin: 0;
+  scroll-snap-align: start;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+.life-row img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (hover: hover) {
+  .life-row figure:hover img { transform: scale(1.04); }
 }
 .funnel-bar { height: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; margin: 12px 0 6px; }
 .funnel-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #2ee6c8, #62b3ff); transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -318,13 +341,20 @@
 }
 .funnel-foot a { color: #c5ccd2; }
 @media (min-width: 840px) {
-  .funnel-main { padding-top: 28px; }
-  .counts { grid-template-columns: repeat(4, 1fr); }
-  .steps, .gets { grid-template-columns: repeat(3, 1fr); }
+  .funnel-main { padding-top: 36px; }
+  .proof, .block { margin-top: 64px; }
+  .steps { grid-template-columns: repeat(3, 1fr); }
   .gets { grid-template-columns: repeat(4, 1fr); }
   .get { grid-template-columns: 1fr; align-items: start; }
   .funnel-options { grid-template-columns: 1fr 1fr; }
   .gallery img { height: 240px; }
+  .life-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .life-row figure { flex: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .funnel-grid, .funnel-candles svg, .tape-track, .gallery-track, .funnel-cta, .funnel-pane, .scan-dots i { animation: none; }
