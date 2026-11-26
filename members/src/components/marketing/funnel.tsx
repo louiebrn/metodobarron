@@ -34,41 +34,6 @@ const NUDGE = [
   "A conta é o passo prático. A tropa é o método.",
 ];
 
-const OPTION_ICON: Record<string, string> = {
-  "18-24": "✦",
-  "25-34": "⚡",
-  "35-44": "🎯",
-  "45-plus": "◆",
-  under18: "⛔",
-  "up-to-500": "🪙",
-  "500-2k": "🔧",
-  "2k-10k": "🧭",
-  "over-10k": "🏔️",
-  never: "🌑",
-  tried: "🧪",
-  sometimes: "📆",
-  weekly: "🔁",
-  extra: "➕",
-  learn: "📚",
-  copy: "📋",
-  live: "🌅",
-  "under-30": "⏱️",
-  "about-1h": "🕐",
-  "2-3h": "🕒",
-  "all-day": "☀️",
-  no: "✖️",
-  other: "🏦",
-  axi: "✅",
-  unsure: "❓",
-};
-
-const SHOTS = [
-  { src: "/funnel/desk.webp", alt: "Mesa vazia com três monitores e gráficos à noite.", width: 1280, height: 720 },
-  { src: "/funnel/skyline.webp", alt: "Horizonte de uma cidade moderna à noite, sem pessoas.", width: 1280, height: 720 },
-  { src: "/funnel/car.webp", alt: "Volante de um carro à noite, sem motorista.", width: 1280, height: 720 },
-  { src: "/funnel/watch.webp", alt: "Relógio no pulso ao lado de um gráfico, sem rosto.", width: 1152, height: 864 },
-];
-
 const TAPE = ["NQ", "ES", "ilustrativo", "sem cotação", "método", "risco"];
 
 function campaign() {
@@ -207,7 +172,6 @@ export function Funnel() {
 
   return (
     <div className="funnel">
-      <div className="funnel-grid" aria-hidden="true" />
       <header className="funnel-top">
         <Logo href="/" />
         <a className="funnel-login" href="/entrar">
@@ -231,7 +195,7 @@ export function Funnel() {
                 <li>6 perguntas</li>
               </ul>
               <button className="funnel-cta" type="button" onClick={start}>
-                Começar meu diagnóstico (grátis, 60s)
+                Começar agora
                 <span className="ar" aria-hidden="true">
                   <Arrow />
                 </span>
@@ -328,35 +292,6 @@ export function Funnel() {
                 </article>
               </div>
             </section>
-
-            <section className="block">
-              <p className="eyebrow">Clima</p>
-              <h2>O ambiente. Não o extrato.</h2>
-              <p className="funnel-lead">Imagens de clima. Não são prints de resultado e não prometem renda.</p>
-              <div className="gallery">
-                <div className="gallery-track">
-                  {[...SHOTS, ...SHOTS].map((shot, i) => (
-                    <figure key={`${shot.src}-${i}`}>
-                      <Image
-                        src={shot.src}
-                        alt={i < SHOTS.length ? shot.alt : ""}
-                        width={shot.width}
-                        height={shot.height}
-                        sizes="320px"
-                        priority={i === 0}
-                      />
-                      {i < SHOTS.length ? <figcaption>{shot.alt}</figcaption> : null}
-                    </figure>
-                  ))}
-                </div>
-              </div>
-              <button className="funnel-cta" type="button" onClick={start}>
-                Começar meu diagnóstico (grátis, 60s)
-                <span className="ar" aria-hidden="true">
-                  <Arrow />
-                </span>
-              </button>
-            </section>
             <LifeGallery />
           </div>
         ) : null}
@@ -384,31 +319,21 @@ export function Funnel() {
             </h1>
             <p className="nudge">{NUDGE[index]}</p>
             <div className="funnel-options">
-              {question.options.map((option) => (
+              {question.options.map((option, optionIndex) => (
                 <button
                   key={option.id}
                   className={answers[question.id] === option.id ? "funnel-option on" : "funnel-option"}
                   type="button"
                   onClick={() => choose(option.id)}
                 >
-                  <span className="ic" aria-hidden="true">
-                    {OPTION_ICON[option.id] ?? "•"}
-                  </span>
+                  <span className="ic">{optionIndex + 1}</span>
                   {option.label}
-                  <span className="go" aria-hidden="true">
-                    <Arrow />
-                  </span>
                 </button>
               ))}
               {question.minor ? (
                 <button className="funnel-option minor" type="button" onClick={() => choose(question.minor!.id)}>
-                  <span className="ic" aria-hidden="true">
-                    {OPTION_ICON[question.minor.id]}
-                  </span>
+                  <span className="ic">{question.options.length + 1}</span>
                   {question.minor.label}
-                  <span className="go" aria-hidden="true">
-                    <Arrow />
-                  </span>
                 </button>
               ) : null}
             </div>

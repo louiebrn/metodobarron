@@ -8,7 +8,8 @@ test("home is a short quiz funnel without the old sales page", () => {
   const funnel = readFileSync(new URL("../src/components/marketing/funnel.tsx", import.meta.url), "utf8");
   const quiz = readFileSync(new URL("../src/lib/quiz.ts", import.meta.url), "utf8");
   const source = page + funnel + quiz;
-  assert.match(funnel, /Começar/);
+  assert.match(funnel, /Começar agora/);
+  assert.doesNotMatch(funnel, /Clima|O ambiente/);
   assert.match(funnel, /50k\+/);
   assert.match(funnel, /30k\+/);
   assert.match(funnel, /1k\+/);
