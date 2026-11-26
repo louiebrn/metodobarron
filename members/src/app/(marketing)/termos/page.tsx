@@ -29,8 +29,9 @@ export default function TermosPage() {
 
       <h2>2. Aceite</h2>
       <p>
-        Ao criar conta, pedir o material grátis ou pagar a assinatura, você concorda com estes termos e com a{" "}
-        <a href="/privacidade">Política de Privacidade</a>. Se não concordar, não use o site.
+        Ao enviar o quiz com o aceite da caixa de consentimento, criar conta ou pagar a assinatura, você concorda com
+        estes termos e com a <a href="/privacidade">Política de Privacidade</a>. Se não concordar, não use o site. O
+        quiz é só para maiores de 18 anos. Quem marca “Menos de 18” não tem os dados guardados.
       </p>
 
       <h2>3. O que o curso é — e o que não é</h2>
@@ -69,10 +70,18 @@ export default function TermosPage() {
         reembolso, o acesso aos módulos é encerrado. Pedidos depois dos 7 dias não geram reembolso do mês em curso.
       </p>
 
-      <h2>7. Material grátis</h2>
+      <h2>7. Quiz, conta na Axi e tropa</h2>
       <p>
-        A planilha e o checklist são liberados quando você informa e-mail ou WhatsApp. O contato serve para entregar o
-        material e, se for o caso, avisar a tropa sobre esse material. Não é obrigatório comprar o curso para baixar.
+        O quiz da home pede faixa de idade, quanto você pretende investir, experiência, objetivo, tempo por dia, se já
+        tem conta em corretora, nome, e-mail e WhatsApp ou Telegram. O envio só segue com o aceite do tratamento desses
+        dados. As respostas servem para uma mensagem curta e para os dois passos seguintes. Não são recomendação de
+        investimento. Trading envolve risco de perda.
+      </p>
+      <p>
+        O botão “Abrir conta na Axi” é um link de afiliado (
+        <a href="https://records.axiaffiliates.com/visit/?bta=45006&amp;brand=axitrader">Axi</a>
+        ). A conta, os custos e as regras da corretora são da Axi, não do Método Barron. O botão da tropa abre o
+        Telegram. Nenhum dos dois obriga a comprar o curso.
       </p>
 
       <h2>8. Conduta</h2>

@@ -12,13 +12,7 @@ function Arrow() {
   );
 }
 
-export function MarketingChrome({
-  checkoutUrl,
-  children,
-}: {
-  checkoutUrl: string;
-  children: ReactNode;
-}) {
+export function MarketingChrome({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const year = new Date().getFullYear();
@@ -41,14 +35,12 @@ export function MarketingChrome({
               Método Barron
             </a>
             <div className="links">
-              <a href="/#metodo">Método</a>
-              <a href="/#conteudo">Conteúdo</a>
-              <a href="/#para-quem">Para quem é</a>
-              <a href="/#faq">FAQ</a>
+              <a href="/termos">Termos</a>
+              <a href="/privacidade">Privacidade</a>
             </div>
             <div className="nav-r">
               <a className="nav-login" href="/entrar">Entrar</a>
-              <a className="nbtn" href={checkoutUrl}>Quero começar</a>
+              <a className="nbtn" href="/">Começar</a>
               <button
                 className="menu"
                 type="button"
@@ -62,11 +54,10 @@ export function MarketingChrome({
           </nav>
         </div>
         <div className="mpanel">
-          <a href="/#metodo" onClick={() => setOpen(false)}><span>Método</span> <Arrow /></a>
-          <a href="/#conteudo" onClick={() => setOpen(false)}><span>Conteúdo</span> <Arrow /></a>
-          <a href="/#para-quem" onClick={() => setOpen(false)}><span>Para quem é</span> <Arrow /></a>
-          <a href="/#faq" onClick={() => setOpen(false)}><span>FAQ</span> <Arrow /></a>
+          <a href="/" onClick={() => setOpen(false)}><span>Começar</span> <Arrow /></a>
           <a href="/entrar" onClick={() => setOpen(false)}><span>Entrar</span> <Arrow /></a>
+          <a href="/termos" onClick={() => setOpen(false)}><span>Termos</span> <Arrow /></a>
+          <a href="/privacidade" onClick={() => setOpen(false)}><span>Privacidade</span> <Arrow /></a>
         </div>
       </header>
 
@@ -77,10 +68,7 @@ export function MarketingChrome({
           <div className="ft">
             <a className="logo" href="/"><span className="mark" />Método Barron</a>
             <div className="flinks">
-              <a href="/#metodo">Método</a>
-              <a href="/#conteudo">Conteúdo</a>
-              <a href="/#para-quem">Para quem é</a>
-              <a href="/#faq">FAQ</a>
+              <a href="/">Começar</a>
               <a href="/termos">Termos</a>
               <a href="/privacidade">Privacidade</a>
               <a className="fig" href="https://www.instagram.com/mtdbarron/" target="_blank" rel="noopener">Instagram</a>

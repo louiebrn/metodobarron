@@ -58,7 +58,7 @@ Copie `.env.example` para `.env.local` só se for mudar algum padrão.
 | `STRIPE_SECRET_KEY` | Sim, para o portal criado pelo app | Chave secreta **live**. Nunca commitar. |
 | `STRIPE_WEBHOOK_SECRET` | Sim, em produção | Segredo do endpoint (`whsec_...`). |
 | `STRIPE_CUSTOMER_PORTAL_LOGIN_URL` | Alternativa à chave secreta | Link de login do portal, se você não quiser que o app chame a API. |
-| `LEADS_WEBHOOK_URL` | Não no `npm run dev` | URL que recebe POST JSON do material grátis. Obrigatória na Vercel para o contato não se perder (o SQLite do disco da função some). |
+| `LEADS_WEBHOOK_URL` | Não no `npm run dev` | URL que recebe POST JSON do quiz (`/api/quiz`). Obrigatória na Vercel para o contato não se perder (o SQLite do disco da função some). O script em `docs/quiz-apps-script.js` grava a aba `Quiz`. |
 | `INSTAGRAM_GRAPH_TOKEN` | Não | Token da Graph API para a contagem de seguidores do Instagram. Sem ele, o site repete o último número salvo. |
 | `INSTAGRAM_USER_ID` | Junto com o token | Id numérico da conta profissional do Instagram. |
 | `INSTAGRAM_GRAPH_VERSION` | Não | Versão da Graph API. Padrão `v21.0`. |
@@ -90,13 +90,17 @@ Eventos, quando o pixel existe e o aceite está gravado:
 | Momento | Meta | TikTok |
 | --- | --- | --- |
 | Cada página | PageView | `page` |
-| Material grátis enviado | Lead | SubmitForm |
-| Clique em comprar | InitiateCheckout (R$97) | InitiateCheckout |
+| Quiz enviado, com Aceitar no banner | Lead e CompleteRegistration | SubmitForm e CompleteRegistration |
+| Clique em comprar (área de membros) | InitiateCheckout (R$97) | InitiateCheckout |
 | Página `/obrigado` | Purchase (R$97) | CompletePayment |
 
-## Material grátis
+Sem o Aceitar do banner, o quiz não dispara pixel. Recusar não carrega os scripts. A caixa de consentimento do formulário é outra coisa: ela autoriza guardar nome, contato e respostas.
 
-O formulário da home (`POST /api/leads`) troca e-mail ou WhatsApp pela planilha e pelo checklist em `/materiais/`. No `npm run dev` o contato vai para o SQLite. Na Vercel esse arquivo não dura: configure `LEADS_WEBHOOK_URL` com um endpoint que aceite JSON `{ name, contactType, contact, page, createdAt, source, offer }`. Sem o webhook e sem disco persistente, o formulário avisa que não guardou o contato e não finge sucesso.
+## Quiz da home
+
+A home é um quiz curto (`POST /api/quiz`). No `npm run dev`, sem `LEADS_WEBHOOK_URL`, as respostas vão para a tabela `quiz_leads` no SQLite. Na Vercel esse arquivo não dura: configure `LEADS_WEBHOOK_URL`. O corpo é JSON com `kind: "quiz"`, `createdAt`, `name`, `email`, `contactType` (`whatsapp` ou `telegram`), `contact`, `age`, `capital`, `experience`, `goal`, `dailyTime`, `broker`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `source`, `page` e `consent`. Quem marca “Menos de 18” não gera POST. Se o webhook falhar, a tela avisa e não finge sucesso.
+
+O arquivo `docs/quiz-apps-script.js` é um Google Apps Script que cria a aba `Quiz` com uma coluna para cada resposta. Passos em `docs/quiz-leads.md`. Não commitar a URL do script.
 
 `DEMO_MODE=false` sem as chaves da Stripe: a interface continua no ar, mas os módulos só abrem quando um webhook de verdade marcar a assinatura como ativa.
 

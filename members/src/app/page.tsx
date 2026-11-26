@@ -1,29 +1,18 @@
 import type { Metadata } from "next";
-import { MarketingBoot } from "@/components/marketing/home-client";
-import { homeBodyHtml } from "@/components/marketing/home-body";
-import { config } from "@/lib/config";
-import { applyFollowerMarkup, formatFollowers, followerTotal } from "@/lib/follower-format";
-import { readFollowerFile } from "@/lib/followers";
-import { applyLaunchMarkup } from "@/lib/launch";
-import "@/components/marketing/home.css";
+import { Funnel } from "@/components/marketing/funnel";
 
-const counts = readFollowerFile();
-const totalLabel = formatFollowers(followerTotal(counts));
-
-const description = `Método Barron, curso para iniciantes por Barron (+${totalLabel} seguidores no Instagram e TikTok): aprenda a operar os futuros americanos NQ (Nasdaq-100) e ES (S&P 500) do jeito certo, do Brasil para o mercado americano, começando no simulador, com gestão de risco e sem promessas milagrosas. De R$197 por R$97 no lançamento.`;
-
-const socialDescription = `Aprenda a operar os futuros NQ e ES do jeito certo com Barron (+${totalLabel} seguidores no Instagram e TikTok): no simulador, com gestão de risco e sem promessas milagrosas. Preço de lançamento: R$97.`;
+const description =
+  "Diagnóstico grátis de 60 segundos da tropa do Barron (TikTok 50k+, Instagram 30k+) para futuros NQ e ES. Conteúdo educacional, sem promessa de lucro.";
 
 export const metadata: Metadata = {
   title: {
-    absolute:
-      "Método Barron | Day trade nos futuros NQ e ES com método, do simulador ao plano de 30 dias",
+    absolute: "Método Barron | Day trade com método, não no escuro",
   },
   description,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Método Barron: day trade com método de verdade",
-    description: socialDescription,
+    title: "Método Barron: day trade com método",
+    description,
     url: "/",
     images: [
       {
@@ -37,25 +26,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Método Barron: day trade com método de verdade",
-    description: `Curso educacional de day trade nos futuros NQ e ES por Barron (+${totalLabel} seguidores no Instagram e TikTok): simulador, gestão de risco e um plano de 30 dias.`,
+    title: "Método Barron: day trade com método",
+    description,
     images: ["/og-image.png"],
   },
 };
 
-function escapeAttr(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
-}
-
 export default function HomePage() {
-  const checkout = escapeAttr(config.paymentLinkUrl);
-  const html = applyLaunchMarkup(
-    applyFollowerMarkup(homeBodyHtml, counts).replaceAll('href="#checkout"', `href="${checkout}"`),
-  );
-  return (
-    <>
-      <div className="mkt js" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
-      <MarketingBoot checkoutUrl={config.paymentLinkUrl} />
-    </>
-  );
+  return <Funnel />;
 }
