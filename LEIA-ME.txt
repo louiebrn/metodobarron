@@ -1,0 +1,9 @@
+MÉTODO BARRON — site pronto para metodobarron.com
+
+1. Suba os dois arquivos (index.html e og.png) na raiz do seu domínio
+   (Netlify, Vercel, Cloudflare Pages ou a hospedagem onde está o domínio).
+2. Abra o site, faça o guia até o fim uma vez com seus próprios dados de teste.
+   O FormSubmit vai mandar um e-mail de ativação para mtdbarron@proton.me:
+   clique em "Activate". A partir daí, cada cadastro chega no seu e-mail.
+3. Links que ainda faltam (edite o bloco window.BARRON no index.html):
+   diarioLink, cursoLink, indicadorLink (checkouts com Pix).
