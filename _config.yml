@@ -1,7 +1,0 @@
-# Legacy GitHub Pages config. Production is the Next.js app in /members,
-# deployed to Vercel with metodobarron.com pointed at that project.
-# GitHub Pages is no longer the host for the marketing site.
-# If Pages is still enabled by mistake, excluding members/ keeps the app
-# source off the leftover static site.
-exclude:
-  - members
